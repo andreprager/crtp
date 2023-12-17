@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+	<Type Name="crtp::Self&lt;*,*&gt;">
+		<DisplayString>
+			{{self = {self()}}}
+		</DisplayString>
+		<Expand>
+			<Item Name="[self]">self()</Item>
+		</Expand>
+	</Type>
+</AutoVisualizer>
