@@ -31,15 +31,34 @@
 	</Type>
 	<Type Name="crtp::storage::OnStack&lt;*,*,*&gt;">
 		<DisplayString>
-			{{OnStack data = {m_data}}}
+			{{OnStack&lt;{$T2},{$T3}&gt; data = {m_data}}}
 		</DisplayString>
 		<Expand>
+			<Item Name="[memory]">*this->memory()</Item>
 			<Item Name="[data]">m_data</Item>
 		</Expand>
 	</Type>
 	<Type Name="crtp::storage::Hybrid&lt;*,*,*&gt;">
 		<DisplayString>
-			{{Hybrid data = {m_data}}}
+			{{Hybrid&lt;{$T2},{$T3}&gt; data = {m_data}}}
+		</DisplayString>
+		<Expand>
+			<Item Name="[memory]">*this->memory()</Item>
+			<Item Name="[data]">m_data</Item>
+		</Expand>
+	</Type>
+	<Type Name="custom::Vector">
+		<DisplayString>
+			{{Vector {m_data}}}
+		</DisplayString>
+		<Expand>
+			<Item Name="[memory]">*this->memory()</Item>
+			<Item Name="[data]">m_data</Item>
+		</Expand>
+	</Type>
+	<Type Name="custom::Array&lt;*,*&gt;">
+		<DisplayString>
+			{{Array&lt;{$T1}, {$T2}&gt; {m_data}}}
 		</DisplayString>
 		<Expand>
 			<Item Name="[data]">m_data</Item>
