@@ -3,7 +3,6 @@
 #include <crtp/storage/detail/concept.decl.hpp>
 
 #include <array>
-#include <concepts>
 #include <cstddef>
 #include <variant>
 
@@ -31,8 +30,6 @@ public:
 	concept_t const* memory() const;
 	concept_t*       memory();
 
-	alignas( TAlignment ) std::variant<buffer_t, std::unique_ptr<concept_t>> m_data;
-
 private:
 	void destroy();
 	/// @pre: 0 == m_data.index()
@@ -44,6 +41,8 @@ private:
 	/// @pre: @this contains buffer variant in m_data.
 	/// @pre: @src contains unique_ptr variant in m_data.
 	void swap_buffer_pointer( Hybrid& src );
+
+	alignas( TAlignment ) std::variant<buffer_t, std::unique_ptr<concept_t>> m_data;
 };
 
 template<typename TStorage, std::size_t TSize, std::size_t TAlignment>

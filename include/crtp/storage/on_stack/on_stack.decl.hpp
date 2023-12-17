@@ -3,9 +3,7 @@
 #include <crtp/storage/detail/concept.decl.hpp>
 
 #include <array>
-#include <concepts>
 #include <cstddef>
-#include <variant>
 
 namespace crtp::storage
 {
@@ -17,7 +15,7 @@ template<typename TStorage, std::size_t TSize = 128, std::size_t TAlignment = 16
 class OnStack
 {
 public:
-	using storage_t   = TStorage;
+	using storage_t = TStorage;
 	using concept_t = storage_t::concept_t;
 	using buffer_t  = std::array<std::byte, TSize>;
 
@@ -30,6 +28,8 @@ public:
 	~OnStack();
 
 	OnStack& swap( OnStack& src );
+	OnStack& replace( concept_t const& src );
+	OnStack& replace( concept_t&& src );
 
 	concept_t const* memory() const;
 	concept_t*       memory();

@@ -154,5 +154,4 @@ TYPED_TEST( CrtpStorageUserApiT, move_assign )
 	sot.user_api();
 	EXPECT_EQ( expected_vector, gs_vector );
 }
-
 } // namespace crtp::storage

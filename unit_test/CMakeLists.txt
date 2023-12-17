@@ -57,6 +57,7 @@ set(include "${CMAKE_CURRENT_SOURCE_DIR}")
 set(sources
 	"${src}/main.cpp"
 	"${src}/crtp/storage/storage.test.cpp"
+	"${src}/crtp/storage/swap.test.cpp"
 	"${src}/custom.cpp"
 )
 

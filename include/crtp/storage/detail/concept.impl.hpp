@@ -27,6 +27,12 @@ inline Model<T, TDerived, TBase>::Model( T value ) : m_value{ std::move( value )
 {}
 
 template<typename T, typename TDerived, typename TBase>
+inline std::size_t Model<T, TDerived, TBase>::size() const
+{
+	return sizeof(Model);
+}
+
+template<typename T, typename TDerived, typename TBase>
 inline auto Model<T, TDerived, TBase>::clone() const -> clone_t
 {
 	return std::make_unique<model_t>( this->self() );

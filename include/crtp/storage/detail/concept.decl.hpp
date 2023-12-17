@@ -18,8 +18,9 @@ public:
 
 	virtual ~Concept() = default;
 
-	virtual clone_t clone() const = 0;
-	virtual clone_t extract() noexcept    = 0;
+	virtual std::size_t size() const       = 0;
+	virtual clone_t     clone() const      = 0;
+	virtual clone_t     extract() noexcept = 0;
 	/// @brief: placement copy, clone @this to @memory
 	virtual void clone( concept_t* memory ) const = 0;
 	/// @brief: placement move, move @this to @memory
@@ -56,8 +57,9 @@ public:
 	using model_t   = TModel;
 	using clone_t   = std::unique_ptr<concept_t>;
 
-	clone_t clone() const override;
-	clone_t extract() noexcept override;
+	std::size_t size() const override;
+	clone_t     clone() const override;
+	clone_t     extract() noexcept override;
 	/// @brief: placement copy, copy self() to @memory
 	void clone( concept_t* memory ) const override;
 	/// @brief: placement move, move self() to @memory

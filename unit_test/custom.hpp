@@ -73,7 +73,7 @@ struct Array
 	{
 		return m_data;
 	};
-	operator range_t &()
+	operator range_t&()
 	{
 		return m_data;
 	};
@@ -87,7 +87,7 @@ template<std::size_t TSize = 128, std::size_t TAlignment = 16>
 bool operator!=( Array<TSize, TAlignment> const& lhs, Array<TSize, TAlignment> const& rhs );
 
 template<std::size_t TSize = 128, std::size_t TAlignment = 16>
-static Array<TSize, TAlignment> gs_array;
+Array<TSize, TAlignment> gs_array;
 
 /// @brief: Allows creating UserApiModel with Array
 template<std::size_t TSize = 128, std::size_t TAlignment = 16>
@@ -127,12 +127,18 @@ struct Vector
 	static Vector sequence( std::size_t size, std::uint8_t offset = {} )
 	{
 		Vector ret( size, {} );
-		std::iota(ret.begin(), ret.end(), offset );
+		std::iota( ret.begin(), ret.end(), offset );
 		return ret;
 	}
 
-	operator range_t const&() const { return m_data; };
-	operator range_t&(){ return m_data; };
+	operator range_t const&() const
+	{
+		return m_data;
+	};
+	operator range_t&()
+	{
+		return m_data;
+	};
 
 	range_t m_data{};
 };
@@ -140,7 +146,7 @@ struct Vector
 bool operator==( Vector const& lhs, Vector const& rhs );
 bool operator!=( Vector const& lhs, Vector const& rhs );
 
-static Vector gs_vector;
+extern Vector gs_vector;
 
 /// @brief: Allows creating UserApiModel with Vector
 inline void call_user_api( Vector const& src )
@@ -160,6 +166,11 @@ public:
 	/// @customize
 	virtual void user_api() const = 0;
 };
+
+inline void call_user_api( UserApiConcept const& src )
+{
+	src.user_api();
+}
 
 /// UserApiModel
 

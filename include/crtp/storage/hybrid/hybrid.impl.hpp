@@ -132,7 +132,7 @@ inline auto Hybrid<TStorage, TSize, TAlignment>::swap( Hybrid& src ) -> Hybrid&
 	std::get<1>( m_data ).swap( std::get<1>( src.m_data ) );
 	return *this;
 #else
-	// @TechnicalDebt: seems to no properly move data
+	// @TechnicalDebt: seems to not properly move data
 	m_data.swap( src.m_data );
 	return *this;
 #endif

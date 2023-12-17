@@ -30,14 +30,23 @@ public:
 	/// @brief: Check if underlying storage as some data.
 	explicit operator bool() const;
 
+	template<typename TSrc, typename TStoragePolicySrc>
+	void swap( Storage<TSrc, TStoragePolicySrc>& src );
+
+	storage_t& storage();
+
 protected:
 	storage_t m_storage;
 
 private:
 	template<typename T>
 	Storage( T value );
+
 	friend TDerived;
 	friend crtp::Self<TDerived, Storage<TDerived, TStoragePolicy>>;
 };
+
+template<typename T0, typename TStoragePolicy0, typename T1, typename TStoragePolicy1>
+void swap( Storage<T0, TStoragePolicy0>& lsh, Storage<T1, TStoragePolicy1>& rsh );
 
 } // namespace crtp::storage

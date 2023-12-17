@@ -66,12 +66,23 @@ inline void OnStack<TStorage, TSize, TAlignment>::swap_buffer( concept_t* lsh, c
 template<typename TStorage, std::size_t TSize, std::size_t TAlignment>
 inline auto OnStack<TStorage, TSize, TAlignment>::swap( OnStack& src ) -> OnStack&
 {
-#if 1
 	swap_buffer( memory(), src.memory() );
-#else
-	// @TechnicalDebt: seems to no properly move data
-	m_data.swap( src.m_data );
-#endif
+	return *this;
+}
+
+template<typename TStorage, std::size_t TSize, std::size_t TAlignment>
+inline auto OnStack<TStorage, TSize, TAlignment>::replace( concept_t const & src ) -> OnStack&
+{
+	destroy();
+	src.clone( memory() );
+	return *this;
+}
+
+template<typename TStorage, std::size_t TSize, std::size_t TAlignment>
+inline auto OnStack<TStorage, TSize, TAlignment>::replace( concept_t&& src ) -> OnStack&
+{
+	destroy();
+	src.extract( memory() );
 	return *this;
 }
 

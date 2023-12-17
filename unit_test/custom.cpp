@@ -2,6 +2,8 @@
 
 namespace custom
 {
+Vector gs_vector;
+
 /// Type
 
 std::ostream& operator<<( std::ostream& os, Type const& value )

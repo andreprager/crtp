@@ -49,6 +49,12 @@ inline auto OnHeap<TStorage>::swap( OnHeap& src ) -> OnHeap&
 }
 
 template<typename TStorage>
+inline void OnHeap<TStorage>::swap_data( concept_ptr_t& src )
+{
+	m_data.swap(src);
+}
+
+template<typename TStorage>
 inline auto OnHeap<TStorage>::memory() const -> concept_t const*
 {
 	return m_data.get();

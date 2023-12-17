@@ -1,10 +1,10 @@
 
 #include "custom.hpp"
 
+#include <crtp/storage/builder/builder.hpp>
 #include <crtp/storage/hybrid/hybrid.hpp>
 #include <crtp/storage/on_heap/on_heap.hpp>
 #include <crtp/storage/on_stack/on_stack.hpp>
-#include <crtp/storage/builder/builder.hpp>
 #include <crtp/storage/storage.hpp>
 
 #include <benchmark/benchmark.h>
@@ -17,14 +17,14 @@ constexpr auto const gsc_min = 1;
 constexpr auto const gsc_max = 1 << 10;
 
 using custom::Array;
+using custom::call_user_api;
 using custom::gs_array;
 using custom::gs_vector;
-using custom::Vector;
 using custom::UserApi;
-using custom::ViewUserApi;
 using custom::UserApiConcept;
 using custom::UserApiModel;
-using custom::call_user_api;
+using custom::Vector;
+using custom::ViewUserApi;
 
 template<typename C>
 struct Builder
@@ -50,10 +50,6 @@ struct Builder<Array<TSize, TAlignment>>
 	}
 };
 
-namespace crtp::storage
-{
-using StorageUserApi = Builder<UserApiModel, UserApiConcept>;
-
 template<typename T = void>
 struct BuilderVector
 {
@@ -61,9 +57,9 @@ struct BuilderVector
 	static std::vector<UserApi<TStoragePolicy>> build( std::size_t size )
 	{
 		std::vector<UserApi<TStoragePolicy>> ret;
-		for (std::size_t i = 0; i < size; ++i)
+		for ( std::size_t i = 0; i < size; ++i )
 		{
-			if (i % 2)
+			if ( i % 2 )
 			{
 				ret.emplace_back( Vector{ 64, static_cast<std::uint8_t>( i ) } );
 			}
@@ -83,14 +79,13 @@ struct BuilderVector<Vector>
 	static std::vector<UserApi<TStoragePolicy>> build( std::size_t size )
 	{
 		std::vector<UserApi<TStoragePolicy>> ret;
-		for (std::size_t i = 0; i < size; ++i)
+		for ( std::size_t i = 0; i < size; ++i )
 		{
 			ret.emplace_back( Vector{ 64, static_cast<std::uint8_t>( i ) } );
 		}
 		return ret;
 	}
 };
-
 
 template<std::size_t TSize, std::size_t TAlignment>
 struct BuilderVector<Array<TSize, TAlignment>>
@@ -99,7 +94,7 @@ struct BuilderVector<Array<TSize, TAlignment>>
 	static std::vector<UserApi<TStoragePolicy>> build( std::size_t size )
 	{
 		std::vector<UserApi<TStoragePolicy>> ret;
-		for (std::size_t i = 0; i < size; ++i)
+		for ( std::size_t i = 0; i < size; ++i )
 		{
 			ret.emplace_back( Array<TSize, TAlignment>{ static_cast<std::uint8_t>( i ) } );
 		}
@@ -107,15 +102,16 @@ struct BuilderVector<Array<TSize, TAlignment>>
 	}
 };
 
+namespace crtp::storage
+{
+using StorageUserApi = Builder<UserApiModel, UserApiConcept>;
 
 static void BM_crtp_storage_setup( benchmark::State& state )
 {
 	for ( auto _ : state )
 	{
-		Vector sot{ 256, static_cast<std::uint8_t>( 42 ) };
+		auto sot = ::Builder<Vector>::build( 256, static_cast<std::uint8_t>( 42 ) );
 		benchmark::DoNotOptimize( sot );
-		call_user_api( sot );
-		benchmark::DoNotOptimize( gs_vector );
 	}
 }
 
@@ -129,7 +125,7 @@ static void BM_crtp_storage_raw_Vector( benchmark::State& state )
 	{
 		for ( std::size_t i = 0; i < size; ++i )
 		{
-			Vector sot{ size, static_cast<std::uint8_t>( i ) };
+			auto sot = ::Builder<Vector>::build( size, static_cast<std::uint8_t>( i ) );
 			benchmark::DoNotOptimize( sot );
 			call_user_api( sot );
 			benchmark::DoNotOptimize( gs_vector );
@@ -147,7 +143,7 @@ static void BM_crtp_storage_std_any_Vector( benchmark::State& state )
 	{
 		for ( std::size_t i = 0; i < size; ++i )
 		{
-			std::any sot = Vector{ size, static_cast<std::uint8_t>( i ) };
+			std::any sot = ::Builder<Vector>::build( size, static_cast<std::uint8_t>( i ) );
 			benchmark::DoNotOptimize( sot );
 			call_user_api( *std::any_cast<Vector>( &sot ) );
 			benchmark::DoNotOptimize( gs_vector );
@@ -166,9 +162,9 @@ static void BM_crtp_storage_OO_Vector( benchmark::State& state )
 		for ( std::size_t i = 0; i < size; ++i )
 		{
 			std::unique_ptr<UserApiConcept> sot
-			    = std::make_unique<UserApiModel<Vector>>( Vector{ size, static_cast<std::uint8_t>( i ) } );
+			    = std::make_unique<UserApiModel<Vector>>( ::Builder<Vector>::build( size, static_cast<std::uint8_t>( i ) ) );
 			benchmark::DoNotOptimize( sot );
-			sot->user_api();
+			call_user_api( *sot );
 			benchmark::DoNotOptimize( gs_vector );
 		}
 	}
@@ -184,7 +180,7 @@ static void BM_crtp_storage_mvd_Vector( benchmark::State& state )
 	{
 		for ( std::size_t i = 0; i < size; ++i )
 		{
-			Vector sot{ size, static_cast<std::uint8_t>( i ) };
+			auto sot = ::Builder<Vector>::build( size, static_cast<std::uint8_t>( i ) );
 			benchmark::DoNotOptimize( sot );
 			call_user_api( ViewUserApi{ sot } );
 			benchmark::DoNotOptimize( gs_vector );
@@ -203,7 +199,7 @@ static void BM_crtp_storage_user( benchmark::State& state )
 	{
 		for ( std::size_t i = 0; i < size; ++i )
 		{
-			UserApi<T> sot = ::Builder<C>::build(size, static_cast<std::uint8_t>( i ));
+			UserApi<T> sot = ::Builder<C>::build( size, static_cast<std::uint8_t>( i ) );
 			benchmark::DoNotOptimize( sot );
 			call_user_api( sot );
 			benchmark::DoNotOptimize( gs_vector );
@@ -242,7 +238,7 @@ static void BM_crtp_storage_mvd( benchmark::State& state )
 	{
 		for ( std::size_t i = 0; i < size; ++i )
 		{
-			UserApi<T> sot = ::Builder<C>::build(size, static_cast<std::uint8_t>( i ));
+			UserApi<T> sot = ::Builder<C>::build( size, static_cast<std::uint8_t>( i ) );
 			benchmark::DoNotOptimize( sot );
 			ViewUserApi view{ sot };
 			benchmark::DoNotOptimize( view );
@@ -281,9 +277,10 @@ static void BM_crtp_storage_vector_raw_Vector( benchmark::State& state )
 	std::size_t const size = state.range( 0 );
 
 	std::vector<Vector> sot;
+
 	for ( std::size_t i = 0; i < size; ++i )
 	{
-		sot.emplace_back( Vector{ size, static_cast<std::uint8_t>( i ) } );
+		sot.emplace_back( Vector::sequence( size, static_cast<std::uint8_t>( i ) ) );
 	}
 	for ( auto _ : state )
 	{
@@ -305,7 +302,7 @@ static void BM_crtp_storage_vector_std_any_Vector( benchmark::State& state )
 	std::vector<std::any> sot;
 	for ( std::size_t i = 0; i < size; ++i )
 	{
-		sot.emplace_back( Vector{ size, static_cast<std::uint8_t>( i ) } );
+		sot.emplace_back( Vector::sequence( size, static_cast<std::uint8_t>( i ) ) );
 	}
 	for ( auto _ : state )
 	{
@@ -327,13 +324,14 @@ static void BM_crtp_storage_vector_OO_Vector( benchmark::State& state )
 	std::vector<std::unique_ptr<UserApiConcept>> sot;
 	for ( std::size_t i = 0; i < size; ++i )
 	{
-		sot.emplace_back( std::make_unique<UserApiModel<Vector>>( Vector{ size, static_cast<std::uint8_t>( i ) } ) );
+		sot.emplace_back(
+		    std::make_unique<UserApiModel<Vector>>( Vector::sequence( size, static_cast<std::uint8_t>( i ) ) ) );
 	}
 	for ( auto _ : state )
 	{
 		for ( auto& entry : sot )
 		{
-			entry->user_api();
+			call_user_api( *entry );
 			benchmark::DoNotOptimize( gs_vector );
 		}
 		benchmark::DoNotOptimize( sot );

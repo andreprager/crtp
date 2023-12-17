@@ -42,4 +42,24 @@ inline Storage<TDerived, TStoragePolicy>::operator bool() const
 	return m_storage->memory();
 }
 
+template<typename TDerived, typename TStoragePolicy>
+inline auto Storage<TDerived, TStoragePolicy>::storage() -> storage_t&
+{
+	return m_storage;
+}
+
+template<typename TDerived, typename TStoragePolicy>
+template<typename TSrc, typename TStoragePolicySrc>
+inline void Storage<TDerived, TStoragePolicy>::swap( Storage<TSrc, TStoragePolicySrc>& src )
+{
+	using std::swap;
+	swap( m_storage, src.storage() );
+}
+
+template<typename T0, typename TStoragePolicy0, typename T1, typename TStoragePolicy1>
+inline void swap( Storage<T0, TStoragePolicy0>& lsh, Storage<T1, TStoragePolicy1>& rsh )
+{
+	lsh.swap( rsh );
+}
+
 } // namespace crtp::storage
