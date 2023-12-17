@@ -1,11 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
-	<Type Name="crtp::Self&lt;*,*&gt;">
+	<Type Name="crtp::storage::Storage&lt;*,*&gt;">
 		<DisplayString>
-			{{self = {self()}}}
+			{{policy = {m_storage}}}
 		</DisplayString>
 		<Expand>
-			<Item Name="[self]">self()</Item>
+			<Item Name="[policy]">m_storage</Item>
+		</Expand>
+	</Type>
+	<Type Name="crtp::storage::detail::Concept&lt;*&gt;">
+		<DisplayString>
+			{{Concept}}
+		</DisplayString>
+	</Type>
+	<Type Name="crtp::storage::detail::Model&lt;*,*,*&gt;">
+		<DisplayString>
+			{{Model value = {m_value}}}
+		</DisplayString>
+		<Expand>
+			<Item Name="[value]">m_value</Item>
+		</Expand>
+	</Type>
+	<Type Name="crtp::storage::OnHeap&lt;*&gt;">
+		<DisplayString>
+			{{OnHeap data = {*m_data}}}
+		</DisplayString>
+		<Expand>
+			<Item Name="[data]">*m_data</Item>
+		</Expand>
+	</Type>
+	<Type Name="crtp::storage::OnStack&lt;*,*,*&gt;">
+		<DisplayString>
+			{{OnStack data = {m_data}}}
+		</DisplayString>
+		<Expand>
+			<Item Name="[data]">m_data</Item>
+		</Expand>
+	</Type>
+	<Type Name="crtp::storage::Hybrid&lt;*,*,*&gt;">
+		<DisplayString>
+			{{Hybrid data = {m_data}}}
+		</DisplayString>
+		<Expand>
+			<Item Name="[data]">m_data</Item>
 		</Expand>
 	</Type>
 </AutoVisualizer>
