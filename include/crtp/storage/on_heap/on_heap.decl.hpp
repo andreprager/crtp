@@ -1,19 +1,21 @@
 #pragma once
 
-#include <crtp/storage/detail/concept.decl.hpp>
+#include <crtp/storage/concept/concept.decl.hpp>
 
 #include <memory>
 
 namespace crtp::storage
 {
-/// @brief:
-template<typename TStorage>
+/// @brief:     Straigh forward smart pointer type erasure.
+/// @tparam:    TBuilder builder strategy, see crtp/storage/builder module for required interface.
+/// @invariant: Always contains valid concept_t inside @m_data.
+template<typename TBuilder>
 class OnHeap
 {
 public:
-	using storage_t = TStorage;
-	using concept_t = storage_t::concept_t;
-	using concept_ptr_t = std::unique_ptr<concept_t>;
+	using builder_t = TBuilder;
+	using concept_t = builder_t::concept_t;
+	using concept_ptr_t = builder_t::concept_ptr_t;
 
 	template<typename T>
 	OnHeap( T value );
@@ -24,7 +26,8 @@ public:
 	OnHeap& operator=( OnHeap&& src ) noexcept;
 
 	OnHeap& swap( OnHeap& src );
-	/// @pre: src not empty
+	/// @brief: Swap with externally created non-empty concept.
+	/// @pre:   src not empty
 	void swap_data( concept_ptr_t& src );
 
 	concept_t const* memory() const;
@@ -34,11 +37,11 @@ private:
 	concept_ptr_t m_data;
 };
 
-template<typename TStorage>
-struct IsStorage<OnHeap<TStorage>> : std::true_type
+template<typename TBuilder>
+struct IsStorage<OnHeap<TBuilder>> : std::true_type
 {};
 
-template<typename TStorage>
-void swap( OnHeap<TStorage>& lsh, OnHeap<TStorage>& rsh );
+template<typename TBuilder>
+void swap( OnHeap<TBuilder>& lsh, OnHeap<TBuilder>& rsh );
 
 } // namespace crtp::storage

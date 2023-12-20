@@ -2,26 +2,26 @@
 
 #include "crtp/storage/hybrid/hybrid.decl.hpp"
 
-#include "crtp/storage/detail/concept.impl.hpp"
+#include "crtp/storage/concept/concept.impl.hpp"
 
 namespace crtp::storage
 {
-template<typename TStorage, std::size_t TSize, std::size_t TAlignment>
+template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
 template<typename T>
-inline Hybrid<TStorage, TSize, TAlignment>::Hybrid( T value )
+inline Hybrid<TBuilder, TSize, TAlignment>::Hybrid( T value )
 {
-	if constexpr ( storage_t::template size<T>() <= TSize )
+	if constexpr ( builder_t::template size<T>() <= TSize )
 	{
-		storage_t::template inplace<TSize, TAlignment>(buffer(), std::move( value ) );
+		builder_t::template inplace<TSize, TAlignment>(buffer(), std::move( value ) );
 	}
 	else
 	{
-		m_data = storage_t::build( std::move( value ) );
+		m_data = builder_t::build( std::move( value ) );
 	}
 }
 
-template<typename TStorage, std::size_t TSize, std::size_t TAlignment>
-inline Hybrid<TStorage, TSize, TAlignment>::Hybrid( Hybrid const& src )
+template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
+inline Hybrid<TBuilder, TSize, TAlignment>::Hybrid( Hybrid const& src )
 {
 	if ( 0 == src.m_data.index() )
 	{
@@ -33,8 +33,8 @@ inline Hybrid<TStorage, TSize, TAlignment>::Hybrid( Hybrid const& src )
 	}
 }
 
-template<typename TStorage, std::size_t TSize, std::size_t TAlignment>
-inline Hybrid<TStorage, TSize, TAlignment>::Hybrid( Hybrid&& src ) noexcept
+template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
+inline Hybrid<TBuilder, TSize, TAlignment>::Hybrid( Hybrid&& src ) noexcept
 {
 	if ( 0 == src.m_data.index() )
 	{
@@ -46,14 +46,14 @@ inline Hybrid<TStorage, TSize, TAlignment>::Hybrid( Hybrid&& src ) noexcept
 	}
 }
 
-template<typename TStorage, std::size_t TSize, std::size_t TAlignment>
-inline Hybrid<TStorage, TSize, TAlignment>::~Hybrid()
+template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
+inline Hybrid<TBuilder, TSize, TAlignment>::~Hybrid()
 {
 	destroy();
 }
 
-template<typename TStorage, std::size_t TSize, std::size_t TAlignment>
-inline auto Hybrid<TStorage, TSize, TAlignment>::operator=( Hybrid const& src ) -> Hybrid&
+template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
+inline auto Hybrid<TBuilder, TSize, TAlignment>::operator=( Hybrid const& src ) -> Hybrid&
 {
 	if ( 0 == src.m_data.index() )
 	{
@@ -67,8 +67,8 @@ inline auto Hybrid<TStorage, TSize, TAlignment>::operator=( Hybrid const& src ) 
 	return *this;
 }
 
-template<typename TStorage, std::size_t TSize, std::size_t TAlignment>
-inline auto Hybrid<TStorage, TSize, TAlignment>::operator=( Hybrid&& src ) noexcept -> Hybrid&
+template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
+inline auto Hybrid<TBuilder, TSize, TAlignment>::operator=( Hybrid&& src ) noexcept -> Hybrid&
 {
 	if ( 0 == src.m_data.index() )
 	{
@@ -82,8 +82,8 @@ inline auto Hybrid<TStorage, TSize, TAlignment>::operator=( Hybrid&& src ) noexc
 	return *this;
 }
 
-template<typename TStorage, std::size_t TSize, std::size_t TAlignment>
-inline void Hybrid<TStorage, TSize, TAlignment>::destroy()
+template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
+inline void Hybrid<TBuilder, TSize, TAlignment>::destroy()
 {
 	if ( 0 == m_data.index() )
 	{
@@ -91,14 +91,14 @@ inline void Hybrid<TStorage, TSize, TAlignment>::destroy()
 	}
 }
 
-template<typename TStorage, std::size_t TSize, std::size_t TAlignment>
-inline void Hybrid<TStorage, TSize, TAlignment>::destroy_buffer()
+template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
+inline void Hybrid<TBuilder, TSize, TAlignment>::destroy_buffer()
 {
 	buffer()->~concept_t();
 }
 
-template<typename TStorage, std::size_t TSize, std::size_t TAlignment>
-inline void Hybrid<TStorage, TSize, TAlignment>::swap_buffer_pointer( Hybrid& src )
+template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
+inline void Hybrid<TBuilder, TSize, TAlignment>::swap_buffer_pointer( Hybrid& src )
 {
 	// save @src unique_ptr
 	std::unique_ptr<concept_t> unique = std::move( std::get<1>( src.m_data ) );
@@ -110,15 +110,14 @@ inline void Hybrid<TStorage, TSize, TAlignment>::swap_buffer_pointer( Hybrid& sr
 	src.m_data = std::move( unique );
 }
 
-template<typename TStorage, std::size_t TSize, std::size_t TAlignment>
-inline auto Hybrid<TStorage, TSize, TAlignment>::swap( Hybrid& src ) -> Hybrid&
+template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
+inline auto Hybrid<TBuilder, TSize, TAlignment>::swap( Hybrid& src ) -> Hybrid&
 {
-#if 1
 	if ( 0 == m_data.index() )
 	{
 		if ( 0 == src.m_data.index() )
 		{
-			OnStack<TStorage, TSize, TAlignment>::swap_buffer( buffer(), src.buffer() );
+			OnStack<TBuilder, TSize, TAlignment>::swap_buffer( buffer(), src.buffer() );
 			return *this;
 		}
 		swap_buffer_pointer( src );
@@ -131,39 +130,34 @@ inline auto Hybrid<TStorage, TSize, TAlignment>::swap( Hybrid& src ) -> Hybrid&
 	}
 	std::get<1>( m_data ).swap( std::get<1>( src.m_data ) );
 	return *this;
-#else
-	// @TechnicalDebt: seems to not properly move data
-	m_data.swap( src.m_data );
-	return *this;
-#endif
 }
 
-template<typename TStorage, std::size_t TSize, std::size_t TAlignment>
-inline auto Hybrid<TStorage, TSize, TAlignment>::buffer() const -> concept_t const*
+template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
+inline auto Hybrid<TBuilder, TSize, TAlignment>::buffer() const -> concept_t const*
 {
 	return reinterpret_cast<concept_t const*>( std::get<0>( m_data ).data() );
 }
 
-template<typename TStorage, std::size_t TSize, std::size_t TAlignment>
-inline auto Hybrid<TStorage, TSize, TAlignment>::buffer() -> concept_t*
+template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
+inline auto Hybrid<TBuilder, TSize, TAlignment>::buffer() -> concept_t*
 {
 	return reinterpret_cast<concept_t*>( std::get<0>( m_data ).data() );
 }
 
-template<typename TStorage, std::size_t TSize, std::size_t TAlignment>
-inline auto Hybrid<TStorage, TSize, TAlignment>::memory() const -> concept_t const*
+template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
+inline auto Hybrid<TBuilder, TSize, TAlignment>::memory() const -> concept_t const*
 {
 	return ( 0 == m_data.index() ) ? buffer() : std::get<1>( m_data ).get();
 }
 
-template<typename TStorage, std::size_t TSize, std::size_t TAlignment>
-inline auto Hybrid<TStorage, TSize, TAlignment>::memory() -> concept_t*
+template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
+inline auto Hybrid<TBuilder, TSize, TAlignment>::memory() -> concept_t*
 {
 	return ( 0 == m_data.index() ) ? buffer() : std::get<1>( m_data ).get();
 }
 
-template<typename TStorage, std::size_t TSize, std::size_t TAlignment>
-inline void swap( Hybrid<TStorage, TSize, TAlignment>& lsh, Hybrid<TStorage, TSize, TAlignment>& rsh )
+template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
+inline void swap( Hybrid<TBuilder, TSize, TAlignment>& lsh, Hybrid<TBuilder, TSize, TAlignment>& rsh )
 {
 	lsh.swap( rsh );
 }

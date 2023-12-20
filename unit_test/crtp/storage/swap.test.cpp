@@ -18,6 +18,7 @@ using custom::call_user_api;
 using custom::gs_array;
 using custom::gs_vector;
 using custom::UserApi;
+using custom::UserApiBuilder;
 using custom::UserApiConcept;
 using custom::UserApiModel;
 using custom::Vector;
@@ -25,12 +26,11 @@ using custom::Vector;
 
 namespace crtp::storage
 {
-using StorageUserApi = Builder<UserApiModel, UserApiConcept>;
 
 TEST( CrtpStorageSwap, swap_Vector )
 {
-	UserApi<OnHeap<StorageUserApi>>      sot0{ Vector::sequence( 256 ) };
-	UserApi<OnStack<StorageUserApi, 64>> sot1{ Vector::sequence( 256, 42 ) };
+	UserApi<OnHeap<UserApiBuilder>>      sot0{ Vector::sequence( 256 ) };
+	UserApi<OnStack<UserApiBuilder, 64>> sot1{ Vector::sequence( 256, 42 ) };
 
 	call_user_api( sot0 );
 	{
@@ -75,8 +75,8 @@ TEST( CrtpStorageSwap, swap_Vector )
 
 TEST( CrtpStorageSwap, swap_Array )
 {
-	UserApi<OnHeap<StorageUserApi>>      sot0{ Array<64>::sequence( 256 ) };
-	UserApi<OnStack<StorageUserApi, 96>> sot1{ Array<64>::sequence( 256, 42 ) };
+	UserApi<OnHeap<UserApiBuilder>>      sot0{ Array<64>::sequence( 256 ) };
+	UserApi<OnStack<UserApiBuilder, 96>> sot1{ Array<64>::sequence( 256, 42 ) };
 
 	call_user_api( sot0 );
 	{
@@ -121,8 +121,8 @@ TEST( CrtpStorageSwap, swap_Array )
 
 TEST( CrtpStorageSwap, swap_Stack_Vector_Heap_Array )
 {
-	UserApi<OnHeap<StorageUserApi>>      sot0{ Array<64>::sequence( 256 ) };
-	UserApi<OnStack<StorageUserApi, 96>> sot1{ Vector::sequence( 64, 42 ) };
+	UserApi<OnHeap<UserApiBuilder>>      sot0{ Array<64>::sequence( 256 ) };
+	UserApi<OnStack<UserApiBuilder, 96>> sot1{ Vector::sequence( 64, 42 ) };
 
 	call_user_api( sot0 );
 	{
@@ -187,8 +187,8 @@ TEST( CrtpStorageSwap, swap_Stack_Vector_Heap_Array )
 
 TEST( CrtpStorageSwap, swap_Stack_Array_Heap_Vector )
 {
-	UserApi<OnStack<StorageUserApi, 96>> sot0{ Array<64>::sequence( 256 ) };
-	UserApi<OnHeap<StorageUserApi>>      sot1{ Vector::sequence( 64, 42 ) };
+	UserApi<OnStack<UserApiBuilder, 96>> sot0{ Array<64>::sequence( 256 ) };
+	UserApi<OnHeap<UserApiBuilder>>      sot1{ Vector::sequence( 64, 42 ) };
 
 	call_user_api( sot0 );
 	{

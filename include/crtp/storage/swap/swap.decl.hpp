@@ -15,4 +15,7 @@ bool try_swap( OnHeap<TStorage>& lsh, OnStack<TStorage, TSize, TAlignment>& rsh 
 template<typename TStorage, std::size_t TSize, std::size_t TAlignment>
 bool try_swap( OnStack<TStorage, TSize, TAlignment>& lsh, OnHeap<TStorage>& rsh );
 
+/// todo: swap for OnHeap/OnStack and Hybrid
+
+
 } // namespace crtp::storage

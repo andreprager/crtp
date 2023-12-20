@@ -2,72 +2,72 @@
 
 #include "crtp/storage/on_heap/on_heap.decl.hpp"
 
-#include "crtp/storage/detail/concept.impl.hpp"
+#include "crtp/storage/concept/concept.impl.hpp"
 
 namespace crtp::storage
 {
 /// OnHeap
 
-template<typename TStorage>
+template<typename TBuilder>
 template<typename T>
-inline OnHeap<TStorage>::OnHeap( T value ) : m_data{ storage_t::build( std::move( value ) ) }
+inline OnHeap<TBuilder>::OnHeap( T value ) : m_data{ builder_t::build( std::move( value ) ) }
 {}
 
-template<typename TStorage>
-inline OnHeap<TStorage>::OnHeap( OnHeap const& src ) : m_data{ src.m_data->clone() }
+template<typename TBuilder>
+inline OnHeap<TBuilder>::OnHeap( OnHeap const& src ) : m_data{ src.m_data->clone() }
 {}
 
-template<typename TStorage>
-inline OnHeap<TStorage>::OnHeap( OnHeap&& src ) noexcept : m_data{ src.m_data->extract() }
+template<typename TBuilder>
+inline OnHeap<TBuilder>::OnHeap( OnHeap&& src ) noexcept : m_data{ src.m_data->extract() }
 {}
 
-template<typename TStorage>
-inline OnHeap<TStorage>::~OnHeap()
+template<typename TBuilder>
+inline OnHeap<TBuilder>::~OnHeap()
 {
 	m_data.reset();
 }
 
-template<typename TStorage>
-inline auto OnHeap<TStorage>::operator=( OnHeap const& src ) -> OnHeap&
+template<typename TBuilder>
+inline auto OnHeap<TBuilder>::operator=( OnHeap const& src ) -> OnHeap&
 {
 	m_data = src.m_data->clone();
 	return *this;
 }
 
-template<typename TStorage>
-inline auto OnHeap<TStorage>::operator=( OnHeap&& src ) noexcept -> OnHeap&
+template<typename TBuilder>
+inline auto OnHeap<TBuilder>::operator=( OnHeap&& src ) noexcept -> OnHeap&
 {
 	m_data = src.m_data->extract();
 	return *this;
 }
 
-template<typename TStorage>
-inline auto OnHeap<TStorage>::swap( OnHeap& src ) -> OnHeap&
+template<typename TBuilder>
+inline auto OnHeap<TBuilder>::swap( OnHeap& src ) -> OnHeap&
 {
 	m_data.swap( src.m_data );
 	return *this;
 }
 
-template<typename TStorage>
-inline void OnHeap<TStorage>::swap_data( concept_ptr_t& src )
+template<typename TBuilder>
+inline void OnHeap<TBuilder>::swap_data( concept_ptr_t& src )
 {
 	m_data.swap(src);
 }
 
-template<typename TStorage>
-inline auto OnHeap<TStorage>::memory() const -> concept_t const*
+template<typename TBuilder>
+inline auto OnHeap<TBuilder>::memory() const -> concept_t const*
 {
 	return m_data.get();
 }
 
-template<typename TStorage>
-inline auto OnHeap<TStorage>::memory() -> concept_t*
+template<typename TBuilder>
+inline auto OnHeap<TBuilder>::memory() -> concept_t*
 {
 	return m_data.get();
 }
 
-template<typename TStorage>
-inline void swap( OnHeap<TStorage>& lsh, OnHeap<TStorage>& rsh )
+template<typename TBuilder>
+inline void swap( OnHeap<TBuilder>& lsh, OnHeap<TBuilder>& rsh )
 {
 	lsh.swap( rsh );
 }

@@ -5,19 +5,20 @@
 
 namespace crtp::storage
 {
-/// @brief: Builder
-///   @interface:
+/// @brief: Standard builder strategy
+///   @interface: Required for customized builder
 ///     @type: concept_t defining base class type
 ///     @function: template<typename T> build(args) to create concrete instance of base class
 ///     @function: template<typename T> size(args) Needed size for object created with @args
-///     @function: template<typename T> inplace(concept_t *address, args) to create concrete instance of base class
-///                inplace at @address with @args.
-
+///     @function: template<typename T> inplace(concept_t *address, args) to create concrete
+///                instance of base class inplace at @address with @args.
+/// @tparam: TConcept  Base class for instantiated model
+/// @tparam: TModel<T> Actual instance created by this builder. Must derive from TConcept.
 template<template<typename> typename TModel, typename TConcept>
 struct Builder
 {
 	/// @brief: Actual interface.
-	using concept_t     = TConcept;
+	using concept_t = TConcept;
 	/// @brief: Pointer to built interface.
 	using concept_ptr_t = std::unique_ptr<concept_t>;
 	/// @brief: Concrete model implementing the interface.

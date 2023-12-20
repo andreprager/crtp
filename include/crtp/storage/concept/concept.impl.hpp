@@ -1,8 +1,8 @@
 #pragma once
 
-#include "crtp/storage/detail/concept.decl.hpp"
+#include "crtp/storage/concept/concept.decl.hpp"
 
-namespace crtp::storage::detail
+namespace crtp::storage
 {
 /// Concept
 
@@ -68,4 +68,4 @@ inline void const* Model<T, TDerived, TBase>::data() const
 	return &m_value;
 }
 
-} // namespace crtp::storage::detail
+} // namespace crtp::storage

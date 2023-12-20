@@ -1,7 +1,6 @@
 
 #include "custom.hpp"
 
-#include <crtp/storage/builder/builder.hpp>
 #include <crtp/storage/hybrid/hybrid.hpp>
 #include <crtp/storage/on_heap/on_heap.hpp>
 #include <crtp/storage/on_stack/on_stack.hpp>
@@ -16,6 +15,7 @@ using custom::Array;
 using custom::gs_array;
 using custom::gs_vector;
 using custom::UserApi;
+using custom::UserApiBuilder;
 using custom::UserApiConcept;
 using custom::UserApiModel;
 using custom::Vector;
@@ -23,8 +23,6 @@ using custom::Vector;
 
 namespace crtp::storage
 {
-using StorageUserApi = Builder<UserApiModel, UserApiConcept>;
-
 TEST( CrtpStorageUserApi, size )
 {
 	using array_t = Array<64>;
@@ -35,7 +33,7 @@ TEST( CrtpStorageUserApi, size )
 	EXPECT_GE( 96, sizeof( m_array_t ) );
 	using uac_t = UserApiConcept;
 	EXPECT_GE( 8, sizeof( uac_t ) );
-	using mcrtp_t = crtp::storage::detail::Model<array_t, m_array_t, uac_t>;
+	using mcrtp_t = crtp::storage::Model<array_t, m_array_t, uac_t>;
 	EXPECT_EQ( sizeof( m_array_t ), sizeof( mcrtp_t ) );
 	EXPECT_EQ( 1, sizeof( crtp::Self<m_array_t, mcrtp_t> ) );
 }
@@ -48,17 +46,17 @@ struct CrtpStorageUserApiT : public testing::Test
 
 // clang-format off
 using Test_types = ::testing::Types<
-	OnHeap <StorageUserApi>,
-	OnStack<StorageUserApi, 64>,
-	OnStack<StorageUserApi, 128>,
-	OnStack<StorageUserApi, 256>,
-	Hybrid <StorageUserApi, 4>,
-	Hybrid <StorageUserApi, 8>,
-	Hybrid <StorageUserApi, 16>,
-	Hybrid <StorageUserApi, 32>,
-	Hybrid <StorageUserApi, 64>,
-	Hybrid <StorageUserApi, 128>,
-	Hybrid <StorageUserApi, 256>
+	OnHeap <UserApiBuilder>,
+	OnStack<UserApiBuilder, 64>,
+	OnStack<UserApiBuilder, 128>,
+	OnStack<UserApiBuilder, 256>,
+	Hybrid <UserApiBuilder, 4>,
+	Hybrid <UserApiBuilder, 8>,
+	Hybrid <UserApiBuilder, 16>,
+	Hybrid <UserApiBuilder, 32>,
+	Hybrid <UserApiBuilder, 64>,
+	Hybrid <UserApiBuilder, 128>,
+	Hybrid <UserApiBuilder, 256>
 >;
 // clang-format on
 

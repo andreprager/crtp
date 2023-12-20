@@ -2,6 +2,7 @@
 #define utility_custom_hpp
 
 #include <crtp/self.hpp>
+#include <crtp/storage/builder/builder.hpp>
 #include <crtp/storage/hybrid/hybrid.hpp>
 #include <crtp/storage/on_heap/on_heap.hpp>
 #include <crtp/storage/on_stack/on_stack.hpp>
@@ -16,30 +17,107 @@
 
 namespace custom
 {
-/// Type
+/// UserApiConcept
 
-struct Type
+/// @brief: Customized Concept with some custom interface function user_api.
+/// @customize: Define interface once.
+class UserApiConcept : public crtp::storage::Concept<UserApiConcept>
 {
-	int m_value;
+public:
+	using concept_t = crtp::storage::Concept<UserApiConcept>;
+	using typename concept_t::clone_t;
+
+	/// @brief: customizable interface functions
+	/// @customize
+	virtual void user_api() const = 0;
 };
 
-bool          operator==( Type const& lhs, Type const& rhs );
-bool          operator!=( Type const& lhs, Type const& rhs );
-std::ostream& operator<<( std::ostream& os, Type const& value );
-
-/// String
-
-struct String
+inline void call_user_api( UserApiConcept const& src )
 {
-	std::string m_value;
+	src.user_api();
+}
+
+/// UserApiModel
+
+/// @brief: Customized Model for some value of Type T.
+/// @pre:   Function call_user_api(T) must exist.
+/// @customize: Define model once, implementing interface.
+template<typename T>
+class UserApiModel : public crtp::storage::Model<T, UserApiModel<T>, UserApiConcept>
+{
+public:
+	using model_t = crtp::storage::Model<T, UserApiModel<T>, UserApiConcept>;
+	UserApiModel( T value ) : model_t{ std::move( value ) }
+	{}
+
+	/// @customize
+	void user_api() const override
+	{
+		call_user_api( this->m_value );
+	}
 };
 
-bool          operator==( String const& lhs, String const& rhs );
-bool          operator!=( String const& lhs, String const& rhs );
-std::ostream& operator<<( std::ostream& os, String const& value );
+/// UserApi
+
+/// @brief: Actual type erased value with some storage policy.
+/// @pre:   TStoragePolicy concept_t must have a user_api function.
+/// @customize: Default value implementation, accepting all value types.
+template<typename TStoragePolicy>
+class UserApi : public crtp::storage::Storage<UserApi<TStoragePolicy>, TStoragePolicy>
+{
+public:
+	using storage_t = crtp::storage::Storage<UserApi<TStoragePolicy>, TStoragePolicy>;
+
+	/// @brief:
+	/// @pre:   call_user_api function
+	template<typename T>
+	UserApi( T value ) : storage_t{ std::move( value ) }
+	{}
+
+	void user_api() const
+	{
+		this->m_storage.memory()->user_api();
+	}
+
+	template<typename T>
+	friend void call_user_api( UserApi<T> const& src );
+};
+
+template<typename T>
+void call_user_api( UserApi<T> const& src )
+{
+	src.user_api();
+}
+
+/// @brief: Default builder strategy for UserApi
+using UserApiBuilder = crtp::storage::Builder<UserApiModel, UserApiConcept>;
+
+/// Manual Virtual Dispatch for UserApi
+
+class ViewUserApi
+{
+public:
+	template<typename TAny>
+	ViewUserApi( TAny const& value )
+	  : m_value{ std::addressof( value ) }
+	  , m_user_api{ []( void const* value ) { call_user_api( *static_cast<TAny const*>( value ) ); } }
+	{}
+
+	friend void call_user_api( ViewUserApi const& view )
+	{
+		view.m_user_api( view.m_value );
+	}
+
+private:
+	using user_api_t = void( void const* );
+
+	void const* m_value{};
+	user_api_t* m_user_api{};
+};
 
 /// Array
 
+/// @brief: Class to simulate some big stack type with some alignment
 template<std::size_t TSize = 128, std::size_t TAlignment = 16>
 struct Array
 {
@@ -86,6 +164,7 @@ bool operator==( Array<TSize, TAlignment> const& lhs, Array<TSize, TAlignment> c
 template<std::size_t TSize = 128, std::size_t TAlignment = 16>
 bool operator!=( Array<TSize, TAlignment> const& lhs, Array<TSize, TAlignment> const& rhs );
 
+/// @brief: Track last call to call_user_api with some Array
 template<std::size_t TSize = 128, std::size_t TAlignment = 16>
 Array<TSize, TAlignment> gs_array;
 
@@ -98,6 +177,7 @@ inline void call_user_api( Array<TSize, TAlignment> const& src )
 
 /// Vector
 
+/// @brief: Class to simulate some type using heap memory.
 struct Vector
 {
 	using range_t = std::vector<std::uint8_t>;
@@ -146,6 +226,7 @@ struct Vector
 bool operator==( Vector const& lhs, Vector const& rhs );
 bool operator!=( Vector const& lhs, Vector const& rhs );
 
+/// @brief: Track last call to call_user_api with some Vector
 extern Vector gs_vector;
 
 /// @brief: Allows creating UserApiModel with Vector
@@ -153,93 +234,6 @@ inline void call_user_api( Vector const& src )
 {
 	gs_vector = src;
 }
-
-// UserApiConcept
-// @customize: Define interface once
-class UserApiConcept : public crtp::storage::detail::Concept<UserApiConcept>
-{
-public:
-	using concept_t = crtp::storage::detail::Concept<UserApiConcept>;
-	using typename concept_t::clone_t;
-
-	/// @brief: customizable interface functions
-	/// @customize
-	virtual void user_api() const = 0;
-};
-
-inline void call_user_api( UserApiConcept const& src )
-{
-	src.user_api();
-}
-
-/// UserApiModel
-
-/// @brief: Automatically create UserApiModel for some value of Type T.
-/// @pre:   Function call_user_api(T,...) must exist.
-// @customize: Define model once, implementing interface
-template<typename T>
-class UserApiModel : public crtp::storage::detail::Model<T, UserApiModel<T>, UserApiConcept>
-{
-public:
-	using model_t = crtp::storage::detail::Model<T, UserApiModel<T>, UserApiConcept>;
-	UserApiModel( T value ) : model_t{ std::move( value ) }
-	{}
-
-	/// @customize
-	void user_api() const override
-	{
-		call_user_api( this->m_value );
-	}
-};
-
-template<typename TStoragePolicy>
-class UserApi : public crtp::storage::Storage<UserApi<TStoragePolicy>, TStoragePolicy>
-{
-public:
-	using storage_t = crtp::storage::Storage<UserApi<TStoragePolicy>, TStoragePolicy>;
-
-	/// @brief:
-	/// @pre:   call_user_api function
-	template<typename T>
-	UserApi( T value ) : storage_t{ std::move( value ) }
-	{}
-
-	void user_api() const
-	{
-		this->m_storage.memory()->user_api();
-	}
-
-	template<typename T>
-	friend void call_user_api( UserApi<T> const& src );
-};
-
-template<typename T>
-void call_user_api( UserApi<T> const& src )
-{
-	src.user_api();
-}
-
-class ViewUserApi
-{
-public:
-	template<typename TAny>
-	ViewUserApi( TAny const& value )
-	  : m_value{ std::addressof( value ) }
-	  , m_user_api{ []( void const* value ) { call_user_api( *static_cast<TAny const*>( value ) ); } }
-	{}
-
-	friend void call_user_api( ViewUserApi const& view )
-	{
-		view.m_user_api( view.m_value );
-	}
-
-
-private:
-	using user_api_t = void( void const* );
-
-	void const* m_value{};
-	user_api_t* m_user_api{};
-};
 
 } // namespace custom
 
