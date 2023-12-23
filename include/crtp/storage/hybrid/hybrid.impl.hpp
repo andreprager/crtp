@@ -2,6 +2,7 @@
 
 #include "crtp/storage/hybrid/hybrid.decl.hpp"
 
+#include "crtp/storage/on_stack/on_stack.impl.hpp"
 #include "crtp/storage/concept/concept.impl.hpp"
 
 namespace crtp::storage
