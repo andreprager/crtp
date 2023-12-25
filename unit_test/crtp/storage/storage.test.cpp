@@ -152,4 +152,21 @@ TYPED_TEST( CrtpStorageUserApiT, move_assign )
 	sot.user_api();
 	EXPECT_EQ( expected_vector, gs_vector );
 }
+
+TYPED_TEST( CrtpStorageUserApiT, data_cast )
+{
+	using policy_t = typename TestFixture::policy_t;
+	Vector const expected_vector{ 1024, std::uint8_t{ 42 } };
+	gs_vector = {};
+
+	UserApi<policy_t> sot{ expected_vector };
+
+	ASSERT_NE( nullptr, sot.data() );
+	ASSERT_NE( nullptr, sot.cast<Vector>() );
+	ASSERT_EQ( expected_vector, *sot.cast<Vector>() );
+	ASSERT_NE( nullptr, std::as_const(sot).data() );
+	ASSERT_NE( nullptr, std::as_const(sot).cast<Vector>() );
+	ASSERT_EQ( expected_vector, *std::as_const(sot).cast<Vector>() );
+}
+
 } // namespace crtp::storage
