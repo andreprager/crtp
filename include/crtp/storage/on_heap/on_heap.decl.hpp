@@ -1,6 +1,6 @@
 #pragma once
 
-#include <crtp/storage/concept/concept.decl.hpp>
+#include <crtp/storage/builder/builder.decl.hpp>
 
 #include <memory>
 
@@ -9,7 +9,7 @@ namespace crtp::storage
 /// @brief:     Straigh forward smart pointer type erasure.
 /// @tparam:    TBuilder builder strategy, see crtp/storage/builder module for required interface.
 /// @invariant: Always contains valid concept_t inside @m_data.
-template<typename TBuilder>
+template<IBuilder TBuilder>
 class OnHeap
 {
 public:
@@ -36,10 +36,6 @@ public:
 private:
 	concept_ptr_t m_data;
 };
-
-template<typename TBuilder>
-struct IsStorage<OnHeap<TBuilder>> : std::true_type
-{};
 
 template<typename TBuilder>
 void swap( OnHeap<TBuilder>& lsh, OnHeap<TBuilder>& rsh );

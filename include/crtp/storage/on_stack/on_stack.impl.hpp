@@ -6,32 +6,33 @@
 
 namespace crtp::storage
 {
-template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
+template<IBuilder TBuilder, std::size_t TSize, std::size_t TAlignment>
 template<typename T>
 inline OnStack<TBuilder, TSize, TAlignment>::OnStack( T value )
 {
-	builder_t::template inplace<TSize, TAlignment>(memory(), std::move(value) );
+	static_assert( IBuilderInplace<builder_t, T, TSize, TAlignment>, "OnStack requires IBuilderInplace<TBuilder, T>." );
+	builder_t::template inplace<TSize, TAlignment>( memory(), std::move( value ) );
 }
 
-template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
+template<IBuilder TBuilder, std::size_t TSize, std::size_t TAlignment>
 inline OnStack<TBuilder, TSize, TAlignment>::OnStack( OnStack const& src ) : m_data{}
 {
 	src.memory()->clone( memory() );
 }
 
-template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
+template<IBuilder TBuilder, std::size_t TSize, std::size_t TAlignment>
 inline OnStack<TBuilder, TSize, TAlignment>::OnStack( OnStack&& src ) noexcept : m_data{}
 {
 	src.memory()->extract( memory() );
 }
 
-template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
+template<IBuilder TBuilder, std::size_t TSize, std::size_t TAlignment>
 inline OnStack<TBuilder, TSize, TAlignment>::~OnStack()
 {
 	destroy();
 }
 
-template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
+template<IBuilder TBuilder, std::size_t TSize, std::size_t TAlignment>
 inline auto OnStack<TBuilder, TSize, TAlignment>::operator=( OnStack const& src ) -> OnStack&
 {
 	destroy();
@@ -39,7 +40,7 @@ inline auto OnStack<TBuilder, TSize, TAlignment>::operator=( OnStack const& src 
 	return *this;
 }
 
-template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
+template<IBuilder TBuilder, std::size_t TSize, std::size_t TAlignment>
 inline auto OnStack<TBuilder, TSize, TAlignment>::operator=( OnStack&& src ) noexcept -> OnStack&
 {
 	destroy();
@@ -47,13 +48,13 @@ inline auto OnStack<TBuilder, TSize, TAlignment>::operator=( OnStack&& src ) noe
 	return *this;
 }
 
-template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
+template<IBuilder TBuilder, std::size_t TSize, std::size_t TAlignment>
 inline void OnStack<TBuilder, TSize, TAlignment>::destroy()
 {
 	memory()->~concept_t();
 }
 
-template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
+template<IBuilder TBuilder, std::size_t TSize, std::size_t TAlignment>
 inline void OnStack<TBuilder, TSize, TAlignment>::swap_buffer( concept_t* lsh, concept_t* rsh )
 {
 	buffer_t tmp{};
@@ -63,14 +64,14 @@ inline void OnStack<TBuilder, TSize, TAlignment>::swap_buffer( concept_t* lsh, c
 	memory->extract( rsh );
 }
 
-template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
+template<IBuilder TBuilder, std::size_t TSize, std::size_t TAlignment>
 inline auto OnStack<TBuilder, TSize, TAlignment>::swap( OnStack& src ) -> OnStack&
 {
 	swap_buffer( memory(), src.memory() );
 	return *this;
 }
 
-template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
+template<IBuilder TBuilder, std::size_t TSize, std::size_t TAlignment>
 inline auto OnStack<TBuilder, TSize, TAlignment>::replace( concept_t const & src ) -> OnStack&
 {
 	destroy();
@@ -78,7 +79,7 @@ inline auto OnStack<TBuilder, TSize, TAlignment>::replace( concept_t const & src
 	return *this;
 }
 
-template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
+template<IBuilder TBuilder, std::size_t TSize, std::size_t TAlignment>
 inline auto OnStack<TBuilder, TSize, TAlignment>::replace( concept_t&& src ) -> OnStack&
 {
 	destroy();
@@ -86,13 +87,13 @@ inline auto OnStack<TBuilder, TSize, TAlignment>::replace( concept_t&& src ) -> 
 	return *this;
 }
 
-template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
+template<IBuilder TBuilder, std::size_t TSize, std::size_t TAlignment>
 inline auto OnStack<TBuilder, TSize, TAlignment>::memory() const -> concept_t const*
 {
 	return reinterpret_cast<concept_t const*>( m_data.data() );
 }
 
-template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
+template<IBuilder TBuilder, std::size_t TSize, std::size_t TAlignment>
 inline auto OnStack<TBuilder, TSize, TAlignment>::memory() -> concept_t*
 {
 	return reinterpret_cast<concept_t*>( m_data.data() );

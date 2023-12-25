@@ -58,6 +58,7 @@ set(sources
 	"${src}/main.cpp"
 	"${src}/crtp/storage/storage.test.cpp"
 	"${src}/crtp/storage/swap.test.cpp"
+	"${src}/crtp/storage/value.test.cpp"
 	"${src}/custom.cpp"
 )
 

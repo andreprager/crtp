@@ -1,10 +1,40 @@
 #pragma once
 
+#include "crtp/storage/concept/concept.decl.hpp"
+
 #include <cstddef>
 #include <memory>
+#include <utility>
 
 namespace crtp::storage
 {
+template<typename B>
+concept IBuilder = requires() {
+	0 != sizeof( typename B::concept_t );
+	0 != sizeof( typename B::concept_ptr_t );
+	{
+		std::declval<typename B::concept_ptr_t>().operator->()
+	} -> std::convertible_to<typename B::concept_t*>;
+	// how do check for static build, size and inplace functions?
+};
+
+template<typename B, typename T>
+concept IBuilderHeap = requires() {
+	IBuilder<B>;
+	{
+		B::template build<T>( std::declval<T>() )
+	} -> std::convertible_to<typename B::concept_ptr_t>;
+};
+
+template<typename B, typename T, std::size_t TSize, std::size_t TAlignment>
+concept IBuilderInplace = requires() {
+	IBuilder<B>;
+	{
+		B::template size<T>()
+	} -> std::convertible_to<std::size_t>;
+	B::template inplace<TSize, TAlignment, T>( std::declval<typename B::concept_t*>(), std::declval<T>() );
+};
+
 /// @brief: Standard builder strategy
 ///   @interface: Required for customized builder
 ///     @type: concept_t defining base class type
@@ -14,7 +44,7 @@ namespace crtp::storage
 ///                instance of base class inplace at @address with @args.
 /// @tparam: TConcept  Base class for instantiated model
 /// @tparam: TModel<T> Actual instance created by this builder. Must derive from TConcept.
-template<template<typename> typename TModel, typename TConcept>
+template<template<typename> typename TModel, IConcept TConcept>
 struct Builder
 {
 	/// @brief: Actual interface.

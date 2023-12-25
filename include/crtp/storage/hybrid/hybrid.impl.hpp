@@ -7,21 +7,23 @@
 
 namespace crtp::storage
 {
-template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
+template<IBuilder TBuilder, std::size_t TSize, std::size_t TAlignment>
 template<typename T>
 inline Hybrid<TBuilder, TSize, TAlignment>::Hybrid( T value )
 {
 	if constexpr ( builder_t::template size<T>() <= TSize )
 	{
+		static_assert( IBuilderInplace<builder_t, T, TSize, TAlignment>, "Hybrid requires IBuilderInplace<TBuilder, T>." );
 		builder_t::template inplace<TSize, TAlignment>(buffer(), std::move( value ) );
 	}
 	else
 	{
+		static_assert( IBuilderHeap<builder_t, T>, "Hybrid requires IBuilderHeap<TBuilder, T>." );
 		m_data = builder_t::build( std::move( value ) );
 	}
 }
 
-template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
+template<IBuilder TBuilder, std::size_t TSize, std::size_t TAlignment>
 inline Hybrid<TBuilder, TSize, TAlignment>::Hybrid( Hybrid const& src )
 {
 	if ( 0 == src.m_data.index() )
@@ -34,7 +36,7 @@ inline Hybrid<TBuilder, TSize, TAlignment>::Hybrid( Hybrid const& src )
 	}
 }
 
-template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
+template<IBuilder TBuilder, std::size_t TSize, std::size_t TAlignment>
 inline Hybrid<TBuilder, TSize, TAlignment>::Hybrid( Hybrid&& src ) noexcept
 {
 	if ( 0 == src.m_data.index() )
@@ -47,13 +49,13 @@ inline Hybrid<TBuilder, TSize, TAlignment>::Hybrid( Hybrid&& src ) noexcept
 	}
 }
 
-template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
+template<IBuilder TBuilder, std::size_t TSize, std::size_t TAlignment>
 inline Hybrid<TBuilder, TSize, TAlignment>::~Hybrid()
 {
 	destroy();
 }
 
-template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
+template<IBuilder TBuilder, std::size_t TSize, std::size_t TAlignment>
 inline auto Hybrid<TBuilder, TSize, TAlignment>::operator=( Hybrid const& src ) -> Hybrid&
 {
 	if ( 0 == src.m_data.index() )
@@ -68,7 +70,7 @@ inline auto Hybrid<TBuilder, TSize, TAlignment>::operator=( Hybrid const& src ) 
 	return *this;
 }
 
-template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
+template<IBuilder TBuilder, std::size_t TSize, std::size_t TAlignment>
 inline auto Hybrid<TBuilder, TSize, TAlignment>::operator=( Hybrid&& src ) noexcept -> Hybrid&
 {
 	if ( 0 == src.m_data.index() )
@@ -83,7 +85,7 @@ inline auto Hybrid<TBuilder, TSize, TAlignment>::operator=( Hybrid&& src ) noexc
 	return *this;
 }
 
-template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
+template<IBuilder TBuilder, std::size_t TSize, std::size_t TAlignment>
 inline void Hybrid<TBuilder, TSize, TAlignment>::destroy()
 {
 	if ( 0 == m_data.index() )
@@ -92,13 +94,13 @@ inline void Hybrid<TBuilder, TSize, TAlignment>::destroy()
 	}
 }
 
-template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
+template<IBuilder TBuilder, std::size_t TSize, std::size_t TAlignment>
 inline void Hybrid<TBuilder, TSize, TAlignment>::destroy_buffer()
 {
 	buffer()->~concept_t();
 }
 
-template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
+template<IBuilder TBuilder, std::size_t TSize, std::size_t TAlignment>
 inline void Hybrid<TBuilder, TSize, TAlignment>::swap_buffer_pointer( Hybrid& src )
 {
 	// save @src unique_ptr
@@ -111,7 +113,7 @@ inline void Hybrid<TBuilder, TSize, TAlignment>::swap_buffer_pointer( Hybrid& sr
 	src.m_data = std::move( unique );
 }
 
-template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
+template<IBuilder TBuilder, std::size_t TSize, std::size_t TAlignment>
 inline auto Hybrid<TBuilder, TSize, TAlignment>::swap( Hybrid& src ) -> Hybrid&
 {
 	if ( 0 == m_data.index() )
@@ -133,25 +135,25 @@ inline auto Hybrid<TBuilder, TSize, TAlignment>::swap( Hybrid& src ) -> Hybrid&
 	return *this;
 }
 
-template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
+template<IBuilder TBuilder, std::size_t TSize, std::size_t TAlignment>
 inline auto Hybrid<TBuilder, TSize, TAlignment>::buffer() const -> concept_t const*
 {
 	return reinterpret_cast<concept_t const*>( std::get<0>( m_data ).data() );
 }
 
-template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
+template<IBuilder TBuilder, std::size_t TSize, std::size_t TAlignment>
 inline auto Hybrid<TBuilder, TSize, TAlignment>::buffer() -> concept_t*
 {
 	return reinterpret_cast<concept_t*>( std::get<0>( m_data ).data() );
 }
 
-template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
+template<IBuilder TBuilder, std::size_t TSize, std::size_t TAlignment>
 inline auto Hybrid<TBuilder, TSize, TAlignment>::memory() const -> concept_t const*
 {
 	return ( 0 == m_data.index() ) ? buffer() : std::get<1>( m_data ).get();
 }
 
-template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
+template<IBuilder TBuilder, std::size_t TSize, std::size_t TAlignment>
 inline auto Hybrid<TBuilder, TSize, TAlignment>::memory() -> concept_t*
 {
 	return ( 0 == m_data.index() ) ? buffer() : std::get<1>( m_data ).get();

@@ -7,6 +7,7 @@
 #include <crtp/storage/on_heap/on_heap.hpp>
 #include <crtp/storage/on_stack/on_stack.hpp>
 #include <crtp/storage/storage.hpp>
+#include <crtp/storage/value/value.hpp>
 
 #include <array>
 #include <memory>
@@ -60,13 +61,13 @@ public:
 /// UserApi
 
 /// @brief: Actual type erased value with some storage policy.
-/// @pre:   TStoragePolicy concept_t must have a user_api function.
+/// @pre:   TPolicy concept_t must have a user_api function.
 /// @customize: Default value implementation, accepting all value types.
-template<typename TStoragePolicy>
-class UserApi : public crtp::storage::Storage<UserApi<TStoragePolicy>, TStoragePolicy>
+template<typename TPolicy>
+class UserApi : public crtp::storage::Storage<UserApi<TPolicy>, TPolicy>
 {
 public:
-	using storage_t = crtp::storage::Storage<UserApi<TStoragePolicy>, TStoragePolicy>;
+	using storage_t = crtp::storage::Storage<UserApi<TPolicy>, TPolicy>;
 
 	/// @brief:
 	/// @pre:   call_user_api function
@@ -76,7 +77,7 @@ public:
 
 	void user_api() const
 	{
-		this->m_storage.memory()->user_api();
+		this->m_policy.memory()->user_api();
 	}
 
 	template<typename T>
@@ -114,6 +115,50 @@ private:
 	void const* m_value{};
 	user_api_t* m_user_api{};
 };
+
+/// UserValueConcept
+
+/// @brief: Optional customized Concept for value. value::Concept may be used directly
+/// @customize: Define interface once.
+class UserValueConcept : public crtp::storage::value::Concept<UserValueConcept>
+{
+public:
+	using concept_t = crtp::storage::value::Concept<UserValueConcept>;
+	using typename concept_t::clone_t;
+};
+
+/// UserValueModel
+
+/// @brief: Optional customized Model for some value of Type T.
+/// @customize: Define model once, implementing interface.
+template<typename T>
+class UserValueModel : public crtp::storage::value::Model<T, UserValueModel<T>, UserValueConcept>
+{
+public:
+	using model_t = crtp::storage::value::Model<T, UserValueModel<T>, UserValueConcept>;
+	UserValueModel( T value ) : model_t{ std::move( value ) }
+	{}
+};
+
+/// UserValue
+
+/// @brief: Actual type erased value with some storage policy.
+/// @pre:   TPolicy concept_t must have a user_api function.
+/// @customize: Default value implementation, accepting all value types.
+template<typename TPolicy>
+class UserValue : public crtp::storage::value::Value<UserValue<TPolicy>, TPolicy>
+{
+public:
+	using storage_t = crtp::storage::value::Value<UserValue<TPolicy>, TPolicy>;
+
+	/// @brief:
+	template<typename T>
+	UserValue( T value ) : storage_t{ std::move( value ) }
+	{}
+};
+
+/// @brief: Default builder strategy for UserValue
+using UserValueBuilder = crtp::storage::Builder<UserValueModel, UserValueConcept>;
 
 /// Array
 

@@ -54,10 +54,10 @@ struct Builder<Array<TSize, TAlignment>>
 template<typename T = void>
 struct BuilderVector
 {
-	template<typename TStoragePolicy>
-	static std::vector<UserApi<TStoragePolicy>> build( std::size_t size )
+	template<typename TPolicy>
+	static std::vector<UserApi<TPolicy>> build( std::size_t size )
 	{
-		std::vector<UserApi<TStoragePolicy>> ret;
+		std::vector<UserApi<TPolicy>> ret;
 		for ( std::size_t i = 0; i < size; ++i )
 		{
 			if ( i % 2 )
@@ -76,10 +76,10 @@ struct BuilderVector
 template<>
 struct BuilderVector<Vector>
 {
-	template<typename TStoragePolicy>
-	static std::vector<UserApi<TStoragePolicy>> build( std::size_t size )
+	template<typename TPolicy>
+	static std::vector<UserApi<TPolicy>> build( std::size_t size )
 	{
-		std::vector<UserApi<TStoragePolicy>> ret;
+		std::vector<UserApi<TPolicy>> ret;
 		for ( std::size_t i = 0; i < size; ++i )
 		{
 			ret.emplace_back( Vector{ 64, static_cast<std::uint8_t>( i ) } );
@@ -91,10 +91,10 @@ struct BuilderVector<Vector>
 template<std::size_t TSize, std::size_t TAlignment>
 struct BuilderVector<Array<TSize, TAlignment>>
 {
-	template<typename TStoragePolicy>
-	static std::vector<UserApi<TStoragePolicy>> build( std::size_t size )
+	template<typename TPolicy>
+	static std::vector<UserApi<TPolicy>> build( std::size_t size )
 	{
-		std::vector<UserApi<TStoragePolicy>> ret;
+		std::vector<UserApi<TPolicy>> ret;
 		for ( std::size_t i = 0; i < size; ++i )
 		{
 			ret.emplace_back( Array<TSize, TAlignment>{ static_cast<std::uint8_t>( i ) } );

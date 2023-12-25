@@ -1,6 +1,6 @@
 #pragma once
 
-#include <crtp/storage/concept/concept.decl.hpp>
+#include <crtp/storage/builder/builder.decl.hpp>
 
 #include <array>
 #include <cstddef>
@@ -13,7 +13,7 @@ namespace crtp::storage
 /// @tparam:    TBuilder builder strategy, see crtp/storage/builder module for required interface.
 /// @pre:       No self references in concept implementations allowed.
 /// @invariant: Always contains valid concept_t inside @m_data.
-template<typename TBuilder, std::size_t TSize = 128, std::size_t TAlignment = 16>
+template<IBuilder TBuilder, std::size_t TSize = 128, std::size_t TAlignment = 16>
 class Hybrid
 {
 public:
@@ -48,10 +48,6 @@ private:
 
 	alignas( TAlignment ) std::variant<buffer_t, std::unique_ptr<concept_t>> m_data;
 };
-
-template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
-struct IsStorage<Hybrid<TBuilder, TSize, TAlignment>> : std::true_type
-{};
 
 template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
 void swap( Hybrid<TBuilder, TSize, TAlignment>& lsh, Hybrid<TBuilder, TSize, TAlignment>& rsh );

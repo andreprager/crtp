@@ -5,59 +5,39 @@
 namespace crtp::storage
 {
 
-template<typename TDerived, typename TStoragePolicy>
+template<typename TDerived, Policy TPolicy>
 template<typename T>
-inline Storage<TDerived, TStoragePolicy>::Storage( T value ) : m_storage{ std::move( value ) }
+inline Storage<TDerived, TPolicy>::Storage( T value ) : m_policy{ std::move( value ) }
 {}
 
-template<typename TDerived, typename TStoragePolicy>
-inline void* Storage<TDerived, TStoragePolicy>::data()
+template<typename TDerived, Policy TPolicy>
+inline Storage<TDerived, TPolicy>::operator bool() const
 {
-	return m_storage.memory()->data();
+	return m_policy.memory();
 }
 
-template<typename TDerived, typename TStoragePolicy>
-inline void const* Storage<TDerived, TStoragePolicy>::data() const
+template<typename TDerived, Policy TPolicy>
+inline auto Storage<TDerived, TPolicy>::policy() const -> policy_t const&
 {
-	return m_storage.memory()->data();
+	return m_policy;
 }
 
-template<typename TDerived, typename TStoragePolicy>
-template<typename T>
-inline T* Storage<TDerived, TStoragePolicy>::cast()
+template<typename TDerived, Policy TPolicy>
+inline auto Storage<TDerived, TPolicy>::policy() -> policy_t&
 {
-	return m_storage.memory()->template cast<T>();
+	return m_policy;
 }
 
-template<typename TDerived, typename TStoragePolicy>
-template<typename T>
-inline T const* Storage<TDerived, TStoragePolicy>::cast() const
-{
-	return m_storage.memory()->template cast<T>();
-}
-
-template<typename TDerived, typename TStoragePolicy>
-inline Storage<TDerived, TStoragePolicy>::operator bool() const
-{
-	return m_storage.memory();
-}
-
-template<typename TDerived, typename TStoragePolicy>
-inline auto Storage<TDerived, TStoragePolicy>::storage() -> storage_t&
-{
-	return m_storage;
-}
-
-template<typename TDerived, typename TStoragePolicy>
-template<typename TSrc, typename TStoragePolicySrc>
-inline void Storage<TDerived, TStoragePolicy>::swap( Storage<TSrc, TStoragePolicySrc>& src )
+template<typename TDerived, Policy TPolicy>
+template<typename TSrc, typename TPolicySrc>
+inline void Storage<TDerived, TPolicy>::swap( Storage<TSrc, TPolicySrc>& src )
 {
 	using std::swap;
-	swap( m_storage, src.storage() );
+	swap( m_policy, src.policy() );
 }
 
-template<typename T0, typename TStoragePolicy0, typename T1, typename TStoragePolicy1>
-inline void swap( Storage<T0, TStoragePolicy0>& lsh, Storage<T1, TStoragePolicy1>& rsh )
+template<typename T0, Policy TPolicy0, typename T1, Policy TPolicy1>
+inline void swap( Storage<T0, TPolicy0>& lsh, Storage<T1, TPolicy1>& rsh )
 {
 	lsh.swap( rsh );
 }

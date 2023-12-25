@@ -21,6 +21,15 @@ using custom::UserApiModel;
 using custom::Vector;
 
 
+struct InvalidBuilder
+{};
+
+struct InvalidBuilderHeap
+{
+	using concept_t     = int;
+	using concept_ptr_t = std::unique_ptr<int>;
+};
+
 namespace crtp::storage
 {
 TEST( CrtpStorageUserApi, size )
@@ -28,7 +37,7 @@ TEST( CrtpStorageUserApi, size )
 	using array_t = Array<64>;
 	EXPECT_EQ( 64, sizeof( array_t ) );
 	using m_array_t = UserApiModel<array_t>;
-	// @TechnicalDebt: 96, but why?
+	// @TechnicalDebt: 96, but why so big?
 	EXPECT_LE( 64, sizeof( m_array_t ) );
 	EXPECT_GE( 96, sizeof( m_array_t ) );
 	using uac_t = UserApiConcept;
@@ -36,6 +45,12 @@ TEST( CrtpStorageUserApi, size )
 	using mcrtp_t = crtp::storage::Model<array_t, m_array_t, uac_t>;
 	EXPECT_EQ( sizeof( m_array_t ), sizeof( mcrtp_t ) );
 	EXPECT_EQ( 1, sizeof( crtp::Self<m_array_t, mcrtp_t> ) );
+
+	// error: missing internal types in builder
+	//using invalid_t  = OnHeap<InvalidBuilder>;
+	using invalid_heap_t = OnHeap<InvalidBuilderHeap>;
+	// error: no static @build(...) function
+	//invalid_heap_t invalid{ 42 };
 }
 
 template<typename T>
@@ -151,22 +166,6 @@ TYPED_TEST( CrtpStorageUserApiT, move_assign )
 	gs_vector = {};
 	sot.user_api();
 	EXPECT_EQ( expected_vector, gs_vector );
-}
-
-TYPED_TEST( CrtpStorageUserApiT, data_cast )
-{
-	using policy_t = typename TestFixture::policy_t;
-	Vector const expected_vector{ 1024, std::uint8_t{ 42 } };
-	gs_vector = {};
-
-	UserApi<policy_t> sot{ expected_vector };
-
-	ASSERT_NE( nullptr, sot.data() );
-	ASSERT_NE( nullptr, sot.cast<Vector>() );
-	ASSERT_EQ( expected_vector, *sot.cast<Vector>() );
-	ASSERT_NE( nullptr, std::as_const(sot).data() );
-	ASSERT_NE( nullptr, std::as_const(sot).cast<Vector>() );
-	ASSERT_EQ( expected_vector, *std::as_const(sot).cast<Vector>() );
 }
 
 } // namespace crtp::storage

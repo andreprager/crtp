@@ -62,12 +62,18 @@ set(headers_install
 	"${include}/crtp/storage/on_stack/on_stack.hpp"
 	"${include}/crtp/storage/on_stack/on_stack.decl.hpp"
 	"${include}/crtp/storage/on_stack/on_stack.impl.hpp"
-	"${include}/crtp/storage/swap/swap.hpp"
-	"${include}/crtp/storage/swap/swap.decl.hpp"
-	"${include}/crtp/storage/swap/swap.impl.hpp"
 	"${include}/crtp/storage/storage.hpp"
 	"${include}/crtp/storage/storage.decl.hpp"
 	"${include}/crtp/storage/storage.impl.hpp"
+	"${include}/crtp/storage/swap/swap.hpp"
+	"${include}/crtp/storage/swap/swap.decl.hpp"
+	"${include}/crtp/storage/swap/swap.impl.hpp"
+	"${include}/crtp/storage/value/concept/concept.hpp"
+	"${include}/crtp/storage/value/concept/concept.decl.hpp"
+	"${include}/crtp/storage/value/concept/concept.impl.hpp"
+	"${include}/crtp/storage/value/value.hpp"
+	"${include}/crtp/storage/value/value.decl.hpp"
+	"${include}/crtp/storage/value/value.impl.hpp"
 )
 
 set(resources_natvis
