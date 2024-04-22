@@ -68,6 +68,7 @@ set(headers_install
 	"${include}/crtp/storage/swap/swap.hpp"
 	"${include}/crtp/storage/swap/swap.decl.hpp"
 	"${include}/crtp/storage/swap/swap.impl.hpp"
+	"${include}/crtp/storage/traits/traits.hpp"
 	"${include}/crtp/storage/value/concept/concept.hpp"
 	"${include}/crtp/storage/value/concept/concept.decl.hpp"
 	"${include}/crtp/storage/value/concept/concept.impl.hpp"

@@ -10,6 +10,7 @@
 
 #include <any>
 #include <string>
+#include <utility>
 
 using custom::Array;
 using custom::gs_array;
@@ -28,29 +29,61 @@ struct InvalidBuilderHeap
 {
 	using concept_t     = int;
 	using concept_ptr_t = std::unique_ptr<int>;
+	void destroy(concept_t*){}
 };
 
 namespace crtp::storage
 {
-TEST( CrtpStorageUserApi, size )
+TEST( CrtpStorageUserApi, storage_size )
 {
-	using array_t = Array<64>;
-	EXPECT_EQ( 64, sizeof( array_t ) );
-	using m_array_t = UserApiModel<array_t>;
-	// @TechnicalDebt: 96, but why so big?
-	EXPECT_LE( 64, sizeof( m_array_t ) );
-	EXPECT_GE( 96, sizeof( m_array_t ) );
 	using uac_t = UserApiConcept;
 	EXPECT_GE( 8, sizeof( uac_t ) );
-	using mcrtp_t = crtp::storage::Model<array_t, m_array_t, uac_t>;
-	EXPECT_EQ( sizeof( m_array_t ), sizeof( mcrtp_t ) );
-	EXPECT_EQ( 1, sizeof( crtp::Self<m_array_t, mcrtp_t> ) );
+	using uab_t = UserApiBuilder;
+	EXPECT_EQ( 1, sizeof( uab_t ) );
+	using oh_t = OnHeap<UserApiBuilder>;
+	EXPECT_EQ( 8, sizeof( oh_t ) );
+	using os_t = OnStack<UserApiBuilder, 64>;
+	EXPECT_EQ( 64, sizeof( os_t ) );
+	using hy_t = Hybrid<UserApiBuilder, 64>;
+	EXPECT_EQ( 80, sizeof( hy_t ) );
 
 	// error: missing internal types in builder
-	//using invalid_t  = OnHeap<InvalidBuilder>;
+	// using invalid_t  = OnHeap<InvalidBuilder>;
 	using invalid_heap_t = OnHeap<InvalidBuilderHeap>;
 	// error: no static @build(...) function
-	//invalid_heap_t invalid{ 42 };
+	// invalid_heap_t invalid{ 42 };
+}
+
+TEST( CrtpStorageUserApi, array_size )
+{
+	using sot_t = Array<64>;
+	EXPECT_EQ( 64, sizeof( sot_t ) );
+	using uac_t = UserApiConcept;
+	using uam_t = UserApiModel<sot_t>;
+	// @TechnicalDebt: 80, but why so big?
+	EXPECT_LE( 64, sizeof( uam_t ) );
+	EXPECT_GE( 96, sizeof( uam_t ) );
+	using m_sot_t = crtp::storage::Model<sot_t, uam_t, uac_t>;
+	EXPECT_EQ( sizeof( uam_t ), sizeof( m_sot_t ) );
+	EXPECT_EQ( 1, sizeof( crtp::Self<uam_t, m_sot_t> ) );
+}
+
+TEST( CrtpStorageUserApi, vector_size )
+{
+	using sot_t = Vector;
+#ifndef NDEBUG
+	EXPECT_EQ( 32, sizeof( sot_t ) );
+#else
+	EXPECT_EQ( 24, sizeof( sot_t ) );
+#endif
+	using uac_t = UserApiConcept;
+	using uam_t = UserApiModel<sot_t>;
+	// @TechnicalDebt: 40, but why so big?
+	EXPECT_LE( 32, sizeof( uam_t ) );
+	EXPECT_GE( 64, sizeof( uam_t ) );
+	using m_sot_t = crtp::storage::Model<sot_t, uam_t, uac_t>;
+	EXPECT_EQ( sizeof( uam_t ), sizeof( m_sot_t ) );
+	EXPECT_EQ( 1, sizeof( crtp::Self<uam_t, m_sot_t> ) );
 }
 
 template<typename T>
@@ -81,10 +114,10 @@ TYPED_TEST( CrtpStorageUserApiT, ctor )
 {
 	using policy_t = typename TestFixture::policy_t;
 	Vector const expected_vector{ 1024, std::uint8_t{ 42 } };
-	gs_vector = {};
 
 	UserApi<policy_t> sot{ expected_vector };
 
+	gs_vector = {};
 	sot.user_api();
 	EXPECT_EQ( expected_vector, gs_vector );
 }
@@ -92,12 +125,12 @@ TYPED_TEST( CrtpStorageUserApiT, ctor )
 TYPED_TEST( CrtpStorageUserApiT, copy_ctor )
 {
 	using policy_t = typename TestFixture::policy_t;
-	Vector const expected_vector{ 1024, std::uint8_t{ 42 } };
-	gs_vector = {};
-
+	Vector const            expected_vector{ 1024, std::uint8_t{ 42 } };
 	UserApi<policy_t> const expected{ expected_vector };
-	UserApi<policy_t>       sot{ expected };
 
+	UserApi<policy_t> sot{ expected };
+
+	gs_vector = {};
 	expected.user_api();
 	EXPECT_EQ( expected_vector, gs_vector );
 	gs_vector = {};
@@ -108,15 +141,15 @@ TYPED_TEST( CrtpStorageUserApiT, copy_ctor )
 TYPED_TEST( CrtpStorageUserApiT, copy_assign )
 {
 	using policy_t = typename TestFixture::policy_t;
-	Vector const expected_vector{ 1024, std::uint8_t{ 42 } };
-	Vector const other_vector{ 42, std::uint8_t{ 0 } };
-	gs_vector = {};
-
+	Vector const            expected_vector{ 1024, std::uint8_t{ 42 } };
+	Vector const            other_vector{ 42, std::uint8_t{ 0 } };
 	UserApi<policy_t> const expected{ expected_vector };
-	UserApi<policy_t>       sot{ other_vector };
+
+	UserApi<policy_t> sot{ other_vector };
 
 	sot = expected;
 
+	gs_vector = {};
 	expected.user_api();
 	EXPECT_EQ( expected_vector, gs_vector );
 	gs_vector = {};
@@ -127,19 +160,15 @@ TYPED_TEST( CrtpStorageUserApiT, copy_assign )
 TYPED_TEST( CrtpStorageUserApiT, move_ctor )
 {
 	using policy_t = typename TestFixture::policy_t;
-	Vector const expected_vector{ 1024, std::uint8_t{ 42 } };
-	gs_vector = {};
-
-	UserApi<policy_t> expected{ Vector{ 1024, std::uint8_t{ 42 } } };
-	UserApi<policy_t> moved{ expected };
+	Vector const      empty_vector{};
+	Vector const      expected_vector{ 1024, std::uint8_t{ 42 } };
+	UserApi<policy_t> moved{ expected_vector };
 
 	UserApi<policy_t> sot{ std::move( moved ) };
 
-	expected.user_api();
-	EXPECT_EQ( expected_vector, gs_vector );
 	gs_vector = {};
 	moved.user_api();
-	EXPECT_NE( expected_vector, gs_vector );
+	EXPECT_EQ( empty_vector, gs_vector );
 	gs_vector = {};
 	sot.user_api();
 	EXPECT_EQ( expected_vector, gs_vector );
@@ -148,21 +177,155 @@ TYPED_TEST( CrtpStorageUserApiT, move_ctor )
 TYPED_TEST( CrtpStorageUserApiT, move_assign )
 {
 	using policy_t = typename TestFixture::policy_t;
-	Vector const expected_vector{ 1024, std::uint8_t{ 42 } };
-	Vector const other_vector{ 42, std::uint8_t{ 0 } };
-	gs_vector = {};
+	Vector const      empty_vector{};
+	Vector const      expected_vector{ 1024, std::uint8_t{ 42 } };
+	Vector const      other_vector{ 42, std::uint8_t{ 0 } };
+	UserApi<policy_t> moved{ expected_vector };
 
-	UserApi<policy_t> const expected{ expected_vector };
-	UserApi<policy_t>       moved{ expected };
-	UserApi<policy_t>       sot{ other_vector };
-
+	UserApi<policy_t> sot{ other_vector };
 	sot = std::move( moved );
 
+	gs_vector = {};
+	moved.user_api();
+	EXPECT_EQ( empty_vector, gs_vector );
+	gs_vector = {};
+	sot.user_api();
+	EXPECT_EQ( expected_vector, gs_vector );
+}
+
+template<typename T>
+struct CrtpStorageUserApiMixedT : public testing::Test
+{
+	using policy_lsh_t = typename T::first_type;
+	using policy_rsh_t = typename T::second_type;
+};
+
+// clang-format off
+using TestMixed_types = ::testing::Types<
+	// same family but different sizes
+	std::pair<OnStack<UserApiBuilder, 64>,  OnStack<UserApiBuilder, 64>>,
+	std::pair<OnStack<UserApiBuilder, 64>,  OnStack<UserApiBuilder, 128>>,
+	std::pair<OnStack<UserApiBuilder, 64>,  OnStack<UserApiBuilder, 256>>,
+	std::pair<OnStack<UserApiBuilder, 128>, OnStack<UserApiBuilder, 64>>,
+	std::pair<OnStack<UserApiBuilder, 128>, OnStack<UserApiBuilder, 128>>,
+	std::pair<OnStack<UserApiBuilder, 128>, OnStack<UserApiBuilder, 256>>,
+	std::pair<OnStack<UserApiBuilder, 256>, OnStack<UserApiBuilder, 64>>,
+	std::pair<OnStack<UserApiBuilder, 256>, OnStack<UserApiBuilder, 128>>,
+	std::pair<OnStack<UserApiBuilder, 256>, OnStack<UserApiBuilder, 256>>,
+	std::pair<Hybrid<UserApiBuilder, 32>,  Hybrid<UserApiBuilder, 32>>,
+	std::pair<Hybrid<UserApiBuilder, 32>,  Hybrid<UserApiBuilder, 64>>,
+	std::pair<Hybrid<UserApiBuilder, 32>,  Hybrid<UserApiBuilder, 128>>,
+	std::pair<Hybrid<UserApiBuilder, 32>,  Hybrid<UserApiBuilder, 256>>,
+	std::pair<Hybrid<UserApiBuilder, 64>,  Hybrid<UserApiBuilder, 32>>,
+	std::pair<Hybrid<UserApiBuilder, 64>,  Hybrid<UserApiBuilder, 64>>,
+	std::pair<Hybrid<UserApiBuilder, 64>,  Hybrid<UserApiBuilder, 128>>,
+	std::pair<Hybrid<UserApiBuilder, 64>,  Hybrid<UserApiBuilder, 256>>,
+	std::pair<Hybrid<UserApiBuilder, 128>, Hybrid<UserApiBuilder, 32>>,
+	std::pair<Hybrid<UserApiBuilder, 128>, Hybrid<UserApiBuilder, 64>>,
+	std::pair<Hybrid<UserApiBuilder, 128>, Hybrid<UserApiBuilder, 128>>,
+	std::pair<Hybrid<UserApiBuilder, 128>, Hybrid<UserApiBuilder, 256>>,
+	std::pair<Hybrid<UserApiBuilder, 256>, Hybrid<UserApiBuilder, 32>>,
+	std::pair<Hybrid<UserApiBuilder, 256>, Hybrid<UserApiBuilder, 64>>,
+	std::pair<Hybrid<UserApiBuilder, 256>, Hybrid<UserApiBuilder, 128>>,
+	std::pair<Hybrid<UserApiBuilder, 256>, Hybrid<UserApiBuilder, 256>>,
+	// mixed families
+	std::pair<OnStack<UserApiBuilder, 64>, Hybrid<UserApiBuilder, 64>>,
+	std::pair<OnStack<UserApiBuilder, 64>, Hybrid<UserApiBuilder, 128>>,
+	std::pair<OnStack<UserApiBuilder, 64>, Hybrid<UserApiBuilder, 256>>,
+	std::pair<OnStack<UserApiBuilder, 128>, Hybrid<UserApiBuilder, 64>>,
+	std::pair<OnStack<UserApiBuilder, 128>, Hybrid<UserApiBuilder, 128>>,
+	std::pair<OnStack<UserApiBuilder, 128>, Hybrid<UserApiBuilder, 256>>,
+	std::pair<OnStack<UserApiBuilder, 256>, Hybrid<UserApiBuilder, 64>>,
+	std::pair<OnStack<UserApiBuilder, 256>, Hybrid<UserApiBuilder, 128>>,
+	std::pair<OnStack<UserApiBuilder, 256>, Hybrid<UserApiBuilder, 256>>,
+	std::pair<Hybrid<UserApiBuilder, 64>, OnStack<UserApiBuilder, 64>>,
+	std::pair<Hybrid<UserApiBuilder, 64>, OnStack<UserApiBuilder, 128>>,
+	std::pair<Hybrid<UserApiBuilder, 64>, OnStack<UserApiBuilder, 256>>,
+	std::pair<Hybrid<UserApiBuilder, 128>, OnStack<UserApiBuilder, 64>>,
+	std::pair<Hybrid<UserApiBuilder, 128>, OnStack<UserApiBuilder, 128>>,
+	std::pair<Hybrid<UserApiBuilder, 128>, OnStack<UserApiBuilder, 256>>,
+	std::pair<Hybrid<UserApiBuilder, 256>, OnStack<UserApiBuilder, 64>>,
+	std::pair<Hybrid<UserApiBuilder, 256>, OnStack<UserApiBuilder, 128>>,
+	std::pair<Hybrid<UserApiBuilder, 256>, OnStack<UserApiBuilder, 256>>
+>;
+// clang-format on
+
+TYPED_TEST_SUITE( CrtpStorageUserApiMixedT, TestMixed_types );
+
+TYPED_TEST( CrtpStorageUserApiMixedT, copy_ctor )
+{
+	using policy_lsh_t = typename TestFixture::policy_lsh_t;
+	using policy_rsh_t = typename TestFixture::policy_rsh_t;
+
+	Vector const          expected_vector{ 1024, std::uint8_t{ 42 } };
+	UserApi<policy_rsh_t> expected{ expected_vector };
+
+	UserApi<policy_lsh_t> sot{ expected };
+
+	gs_vector = {};
 	expected.user_api();
 	EXPECT_EQ( expected_vector, gs_vector );
 	gs_vector = {};
+	sot.user_api();
+	EXPECT_EQ( expected_vector, gs_vector );
+}
+
+TYPED_TEST( CrtpStorageUserApiMixedT, copy_assign )
+{
+	using policy_lsh_t = typename TestFixture::policy_lsh_t;
+	using policy_rsh_t = typename TestFixture::policy_rsh_t;
+
+	Vector const          other_vector{ 1024, std::uint8_t{ 13 } };
+	Vector const          expected_vector{ 1024, std::uint8_t{ 42 } };
+	UserApi<policy_rsh_t> expected{ expected_vector };
+
+	UserApi<policy_lsh_t> sot{ other_vector };
+	sot = expected;
+
+	gs_vector = {};
+	expected.user_api();
+	EXPECT_EQ( expected_vector, gs_vector );
+	gs_vector = {};
+	sot.user_api();
+	EXPECT_EQ( expected_vector, gs_vector );
+}
+
+TYPED_TEST( CrtpStorageUserApiMixedT, move_ctor )
+{
+	using policy_lsh_t = typename TestFixture::policy_lsh_t;
+	using policy_rsh_t = typename TestFixture::policy_rsh_t;
+
+	Vector const empty_vector{};
+	Vector const expected_vector{ 1024, std::uint8_t{ 42 } };
+
+	UserApi<policy_lsh_t> moved{ expected_vector };
+
+	UserApi<policy_rsh_t> sot{ std::move( moved ) };
+
+	gs_vector = {};
 	moved.user_api();
-	EXPECT_NE( expected_vector, gs_vector );
+	EXPECT_EQ( empty_vector, gs_vector );
+	gs_vector = {};
+	sot.user_api();
+	EXPECT_EQ( expected_vector, gs_vector );
+}
+
+TYPED_TEST( CrtpStorageUserApiMixedT, move_assign )
+{
+	using policy_lsh_t = typename TestFixture::policy_lsh_t;
+	using policy_rsh_t = typename TestFixture::policy_rsh_t;
+
+	Vector const          empty_vector{};
+	Vector const          other_vector{ 1024, std::uint8_t{ 13 } };
+	Vector const          expected_vector{ 1024, std::uint8_t{ 42 } };
+	UserApi<policy_rsh_t> moved{ expected_vector };
+
+	UserApi<policy_lsh_t> sot{ other_vector };
+	sot = std::move( moved );
+
+	gs_vector = {};
+	moved.user_api();
+	EXPECT_EQ( empty_vector, gs_vector );
 	gs_vector = {};
 	sot.user_api();
 	EXPECT_EQ( expected_vector, gs_vector );

@@ -13,8 +13,8 @@ template<IBuilder TBuilder>
 class OnHeap
 {
 public:
-	using builder_t = TBuilder;
-	using concept_t = builder_t::concept_t;
+	using builder_t     = TBuilder;
+	using concept_t     = builder_t::concept_t;
 	using concept_ptr_t = builder_t::concept_ptr_t;
 
 	template<typename T>
@@ -25,19 +25,19 @@ public:
 	OnHeap& operator=( OnHeap const& src );
 	OnHeap& operator=( OnHeap&& src ) noexcept;
 
-	OnHeap& swap( OnHeap& src );
+	OnHeap& swap( OnHeap& src ) noexcept;
 	/// @brief: Swap with externally created non-empty concept.
 	/// @pre:   src not empty
-	void swap_data( concept_ptr_t& src );
+	void swap_data( concept_ptr_t& src ) noexcept;
 
 	concept_t const* memory() const;
 	concept_t*       memory();
 
 private:
-	concept_ptr_t m_data;
+	concept_ptr_t m_data{};
 };
 
 template<typename TBuilder>
-void swap( OnHeap<TBuilder>& lsh, OnHeap<TBuilder>& rsh );
+void swap( OnHeap<TBuilder>& lsh, OnHeap<TBuilder>& rsh ) noexcept;
 
 } // namespace crtp::storage

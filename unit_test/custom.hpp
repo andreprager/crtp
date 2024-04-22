@@ -192,11 +192,16 @@ struct Array
 		return ret;
 	}
 
-	operator range_t const&() const
+	operator range_t const &() const&
 	{
 		return m_data;
 	};
-	operator range_t&()
+	operator range_t&&() &&
+	{
+		return std::move( m_data );
+	};
+
+	operator range_t&() &
 	{
 		return m_data;
 	};
@@ -256,11 +261,15 @@ struct Vector
 		return ret;
 	}
 
-	operator range_t const&() const
+	operator range_t const &() const&
 	{
 		return m_data;
 	};
-	operator range_t&()
+	operator range_t&&() &&
+	{
+		return std::move( m_data );
+	};
+	operator range_t&() &
 	{
 		return m_data;
 	};

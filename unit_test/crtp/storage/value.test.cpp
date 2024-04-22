@@ -102,7 +102,7 @@ TYPED_TEST( CrtpStorageValueT, move_ctor )
 	Vector const expected_vector{ 1024, std::uint8_t{ 42 } };
 	gs_vector = {};
 
-	UserValue<policy_t> expected{ Vector{ 1024, std::uint8_t{ 42 } } };
+	UserValue<policy_t> expected{ expected_vector };
 	UserValue<policy_t> moved{ expected };
 
 	auto                data = moved.cast<Vector>()->m_data.data();

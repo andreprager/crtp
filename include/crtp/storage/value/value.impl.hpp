@@ -7,8 +7,7 @@ namespace crtp::storage::value
 /// Value
 
 template<typename TDerived, Policy TPolicy>
-template<typename T>
-inline Value<TDerived, TPolicy>::Value( T value ) : storage_base_t{ std::move( value ) }
+inline Value<TDerived, TPolicy>::Value( traits::ValueArgument auto value ) : storage_base_t{ std::move( value ) }
 {}
 
 template<typename TDerived, Policy TPolicy>

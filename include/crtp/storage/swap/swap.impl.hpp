@@ -10,40 +10,70 @@
 
 namespace crtp::storage
 {
-template<typename TStorage, std::size_t TSize, std::size_t TAlignment>
-inline void swap( OnHeap<TStorage>& lsh, OnStack<TStorage, TSize, TAlignment>& rsh )
+template<traits::Policy P0, traits::Policy P1>
+inline void swap_unsafe(P0& lsh, P1& rsh)
 {
-	if ( TSize < lsh.memory()->size() )
+	if (!swap(lsh, rsh))
 	{
-		throw std::invalid_argument( "Size of OnHeap<TStorage>& lsh too big." );
+		throw std::invalid_argument( "Swap for storage.Policy failed." );
+	}
+}
+
+// OnHeap - OnStack
+
+template<IBuilder TBuilder, std::size_t Size, std::size_t Alignment>
+inline bool swap( OnHeap<TBuilder>& lsh, OnStack<TBuilder, Size, Alignment>& rsh ) noexcept
+{
+	if ( Size < lsh.memory()->size() )
+	{
+		return false;
 	}
 	auto tmp = rsh.memory()->extract();
 	lsh.swap_data( tmp );
 	rsh.replace( std::move( *tmp ) );
-}
-
-template<typename TStorage, std::size_t TSize, std::size_t TAlignment>
-inline void swap( OnStack<TStorage, TSize, TAlignment>& lsh, OnHeap<TStorage>& rsh )
-{
-	swap( rsh, lsh );
-}
-
-template<typename TStorage, std::size_t TSize, std::size_t TAlignment>
-inline bool try_swap( OnHeap<TStorage>& lsh, OnStack<TStorage, TSize, TAlignment>& rsh )
-try
-{
-	swap( lsh, rsh );
 	return true;
 }
-catch ( ... )
+
+template<IBuilder TBuilder, std::size_t Size, std::size_t Alignment>
+inline bool swap( OnStack<TBuilder, Size, Alignment>& lsh, OnHeap<TBuilder>& rsh ) noexcept
 {
-	return false;
+	return swap( rsh, lsh );
 }
 
-template<typename TStorage, std::size_t TSize, std::size_t TAlignment>
-inline bool try_swap( OnStack<TStorage, TSize, TAlignment>& lsh, OnHeap<TStorage>& rsh )
+// Hybrid - OnStack
+
+template<IBuilder TBuilder, std::size_t Size, std::size_t Alignment, std::size_t Size2>
+inline bool swap( Hybrid<TBuilder, Size, Alignment>& lsh, OnStack<TBuilder, Size2, Alignment>& rsh ) noexcept
 {
-	return try_swap( rsh, lsh );
+	if ( Size2 < lsh.memory()->size() )
+	{
+		return false;
+	}
+	lsh.swap_data( rsh.buffer() );
+	return true;
+}
+
+template<IBuilder TBuilder, std::size_t Size, std::size_t Alignment, std::size_t Size2>
+inline bool swap( OnStack<TBuilder, Size2, Alignment>& lsh, Hybrid<TBuilder, Size, Alignment>& rsh ) noexcept
+{
+	return swap( rsh, lsh );
+}
+
+// Hybrid - OnHeap
+
+template<IBuilder TBuilder, std::size_t Size, std::size_t Alignment>
+inline bool swap( Hybrid<TBuilder, Size, Alignment>& lsh, OnHeap<TBuilder>& rsh ) noexcept
+{
+	auto tmp = lsh.memory()->extract();
+	rsh.swap_data( tmp );
+	lsh.replace( std::move( *tmp ) );
+	return true;
+}
+
+template<IBuilder TBuilder, std::size_t Size, std::size_t Alignment>
+inline bool swap( OnHeap<TBuilder>& lsh, Hybrid<TBuilder, Size, Alignment>& rsh ) noexcept
+{
+	return swap( rsh, lsh );
 }
 
 } // namespace crtp::storage

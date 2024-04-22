@@ -43,17 +43,23 @@ public:
 	virtual std::size_t size() const = 0;
 	/// @brief: Clone @this concept by copying concrete internal state to newly creaeted instance.
 	///         Similar to copy constructor.
+	/// @post:  this is not destroyed, just copied from.
 	virtual clone_t clone() const = 0;
 	/// @brief: Placement copy, clone @this to @memory.
 	///         Similar to copy constructor.
 	/// @pre:   @memory must point to a location of at least @size() bytes.
+	/// @pre:   @memory must be not constructed yet.
+	/// @post:  this is not destroyed, just copied from.
 	virtual void clone( concept_t* memory ) const = 0;
 	/// @brief: Move @this concept by moving concrete internal state to newly created instance.
 	///         Similar to move constructor.
+	/// @post:  this is not destroyed, just moved from.
 	virtual clone_t extract() noexcept = 0;
 	/// @brief: Placement move, move @this to @memory.
 	///         Similar to move constructor.
 	/// @pre:   @memory must point to a location of at least @size() bytes.
+	/// @pre:   @memory must be not constructed yet.
+	/// @post:  this is not destroyed, just moved from.
 	virtual void extract( concept_t* memory ) noexcept = 0;
 
 private:

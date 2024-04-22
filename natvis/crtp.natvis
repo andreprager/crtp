@@ -13,7 +13,7 @@
 			{{Concept}}
 		</DisplayString>
 	</Type>
-	<Type Name="crtp::storage::detail::Model&lt;*,*,*&gt;">
+	<Type Name="crtp::storage::Model&lt;*,*,*,*&gt;">
 		<DisplayString>
 			{{Model value = {m_value}}}
 		</DisplayString>
@@ -34,7 +34,7 @@
 			{{OnStack&lt;{$T2},{$T3}&gt; data = {m_data}}}
 		</DisplayString>
 		<Expand>
-			<Item Name="[memory]">*this->memory()</Item>
+			<Item Name="[memory]">*(concept_t*)this->m_data._Elems</Item>
 			<Item Name="[data]">m_data</Item>
 		</Expand>
 	</Type>
@@ -43,7 +43,8 @@
 			{{Hybrid&lt;{$T2},{$T3}&gt; data = {m_data}}}
 		</DisplayString>
 		<Expand>
-			<Item Name="[memory]">*this->memory()</Item>
+			<Item Name="[inplace]" Condition="this->m_data._Which == 0">*(concept_t*)this->m_data._Head._Elems</Item>
+			<Item Name="[unique]" Condition="this->m_data._Which == 1">this->m_data._Tail._Head</Item>
 			<Item Name="[data]">m_data</Item>
 		</Expand>
 	</Type>
@@ -52,7 +53,6 @@
 			{{Vector {m_data}}}
 		</DisplayString>
 		<Expand>
-			<Item Name="[memory]">*this->memory()</Item>
 			<Item Name="[data]">m_data</Item>
 		</Expand>
 	</Type>

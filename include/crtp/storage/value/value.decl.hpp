@@ -1,25 +1,26 @@
 #pragma once
 
 #include "crtp/self.hpp"
-#include "crtp/storage/value/concept/concept.hpp"
 #include "crtp/storage/storage.hpp"
+#include "crtp/storage/traits/traits.hpp"
+#include "crtp/storage/value/concept/concept.hpp"
 
 #include <concepts>
 
 namespace crtp::storage::value
 {
 /// @brief: Concept for value policy.
-template<typename S>
-concept Policy = requires( S s ) {
-	::crtp::storage::Policy<S>;
-	IConcept<S>;
+template<typename P>
+concept Policy = requires( P p ) {
+	::crtp::storage::traits::Policy<P>;
+	IConcept<P>;
 };
 
 /// @brief: Concept for vaöue cast policy.
-template<typename S, typename T>
-concept PolicyCast = requires( S s ) {
-	Policy<S>;
-	IConceptCast<S, T>;
+template<typename P, typename T>
+concept PolicyCast = requires( P p ) {
+	Policy<P>;
+	IConceptCast<P, T>;
 };
 
 /// @brief:  Crtp Storage value interface provider
@@ -55,8 +56,7 @@ public:
 	T const* cast() const;
 
 private:
-	template<typename T>
-	Value( T value );
+	Value( traits::ValueArgument auto value );
 
 	friend TDerived;
 	friend storage_base_t;

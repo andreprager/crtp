@@ -44,14 +44,14 @@ inline auto OnHeap<TBuilder>::operator=( OnHeap&& src ) noexcept -> OnHeap&
 }
 
 template<IBuilder TBuilder>
-inline auto OnHeap<TBuilder>::swap( OnHeap& src ) -> OnHeap&
+inline auto OnHeap<TBuilder>::swap( OnHeap& src ) noexcept -> OnHeap&
 {
 	m_data.swap( src.m_data );
 	return *this;
 }
 
 template<IBuilder TBuilder>
-inline void OnHeap<TBuilder>::swap_data( concept_ptr_t& src )
+inline void OnHeap<TBuilder>::swap_data( concept_ptr_t& src ) noexcept
 {
 	m_data.swap( src );
 }
@@ -69,7 +69,7 @@ inline auto OnHeap<TBuilder>::memory() -> concept_t*
 }
 
 template<typename TBuilder>
-inline void swap( OnHeap<TBuilder>& lsh, OnHeap<TBuilder>& rsh )
+inline void swap( OnHeap<TBuilder>& lsh, OnHeap<TBuilder>& rsh ) noexcept
 {
 	lsh.swap( rsh );
 }

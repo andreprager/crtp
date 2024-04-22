@@ -1,6 +1,7 @@
 #pragma once
 
 #include <crtp/storage/builder/builder.decl.hpp>
+#include <crtp/storage/traits/traits.hpp>
 
 #include <array>
 #include <cstddef>
@@ -13,43 +14,105 @@ namespace crtp::storage
 /// @tparam:    TBuilder builder strategy, see crtp/storage/builder module for required interface.
 /// @pre:       No self references in concept implementations allowed.
 /// @invariant: Always contains valid concept_t inside @m_data.
-template<IBuilder TBuilder, std::size_t TSize = 128, std::size_t TAlignment = 16>
+template<IBuilder TBuilder, std::size_t Size = 128, std::size_t Alignment = 16>
 class Hybrid
 {
 public:
-	using builder_t = TBuilder;
-	using concept_t = builder_t::concept_t;
-	using buffer_t  = std::array<std::byte, TSize>;
+	using builder_t     = TBuilder;
+	using concept_t     = builder_t::concept_t;
+	using concept_ptr_t = builder_t::concept_ptr_t;
+	using buffer_t      = std::array<std::byte, Size>;
+	template<std::size_t Size2>
+	using buffer_other_t = std::array<std::byte, Size2>;
+	template<std::size_t Size2>
+	using HybridSrc = Hybrid<TBuilder, Size2, Alignment>;
 
 	template<typename T>
 	Hybrid( T value );
+
 	Hybrid( Hybrid const& src );
 	Hybrid( Hybrid&& src ) noexcept;
-	Hybrid& operator=( Hybrid const& src );
-	Hybrid& operator=( Hybrid&& src ) noexcept;
+
+	Hybrid( traits::PolicyAssignOther<Hybrid<TBuilder, Size, Alignment>> auto src );
+
 	~Hybrid();
 
-	Hybrid& swap( Hybrid& src );
+	Hybrid& operator=( Hybrid const& src );
+	Hybrid& operator=( Hybrid&& src ) noexcept;
+
+	Hybrid& operator=( traits::PolicyAssignOther<Hybrid<TBuilder, Size, Alignment>> auto src ) noexcept;
 
 	concept_t const* memory() const;
 	concept_t*       memory();
 
+	/// @brief: Copy construct @src into m_data, via clone. Previous buffer content is destroyed if any.
+	Hybrid& replace( concept_t const& src );
+	/// @brief: Move construct @src into m_data, via extract. Previous buffer content is destroyed if any.
+	Hybrid& replace( concept_t&& src ) noexcept;
+	/// @brief: Move construct @src into m_data into pointer if Size < src->size() otherwise into buffer.
+	///         Previous buffer content is destroyed if any.
+	Hybrid& replace( concept_ptr_t src ) noexcept;
+
+	Hybrid& swap( Hybrid& src ) noexcept;
+	template<std::size_t Size2>
+	Hybrid& swap( HybridSrc<Size2>& src, std::enable_if_t<Size != Size2, int> = 0 ) noexcept;
+	/// @pre: src must contain an inplace constructed concept_t.
+	template<std::size_t Size2>
+	bool swap_data( buffer_other_t<Size2>& src ) noexcept;
+
 private:
-	void destroy();
-	/// @pre: 0 == m_data.index()
-	void destroy_buffer();
+	/// @brief: Copy construct @src into m_data, via clone. Previous buffer content is not destroyed if any.
+	/// @pre: m_data must not be constructed yet.
+	Hybrid& construct( concept_t const& src );
+	/// @brief: Move construct @src into m_data, via extract. Previous buffer content is not destroyed if any.
+	/// @pre: m_data must not be constructed yet.
+	Hybrid& construct( concept_t&& src ) noexcept;
+	/// @brief: Move construct @src into m_data. via move (Size < src.size()) or move construct. Previous buffer content
+	/// is not destroyed if any.
+	/// @pre: m_data must not be constructed yet.
+	Hybrid& construct( concept_ptr_t src ) noexcept;
+
 	/// @pre: 0 == m_data.index()
 	concept_t const* buffer() const;
 	/// @pre: 0 == m_data.index()
 	concept_t* buffer();
-	/// @pre: @this contains buffer variant in m_data.
-	/// @pre: @src contains unique_ptr variant in m_data.
-	void swap_buffer_pointer( Hybrid& src );
+	/// @post: Destroy buffer if needed.
+	Hybrid& destroy() noexcept;
+	/// @pre: 0 == m_data.index()
+	/// @post: buffer is destroyed if any
+	Hybrid& destroy_buffer() noexcept;
+	/// @brief: Swap buffer (@this) and unique_ptr (@src) for same size.
+	/// @pre: 0 == m_data.index()
+	/// @pre: 1 == src.m_data.index()
+	Hybrid& swap_buffer_pointer( Hybrid& src ) noexcept;
+	/// @brief: Swap @this with buffer (@src) with respect to target buffer sizes.
+	/// @pre: 0 == src.m_data.index()
+	template<std::size_t Size2>
+	Hybrid& swap_buffer( HybridSrc<Size2>& src, std::enable_if_t<Size != Size2, int> = 0 ) noexcept;
+	/// @brief: Swap @this with unique_ptr (@src) with respect to target buffer sizes.
+	/// @pre: 1 == src.m_data.index()
+	template<std::size_t Size2>
+	Hybrid& swap_pointer( HybridSrc<Size2>& src, std::enable_if_t<Size != Size2, int> = 0 ) noexcept;
 
-	alignas( TAlignment ) std::variant<buffer_t, std::unique_ptr<concept_t>> m_data;
+	alignas( Alignment ) std::variant<buffer_t, std::unique_ptr<concept_t>> m_data;
+#if defined( _MSC_VER )
+	[[msvc::no_unique_address]] builder_t m_builder{};
+#else
+	[[no_unique_address]] builder_t m_builder{};
+#endif
+
+	template<IBuilder TBuilder2, std::size_t Size2, std::size_t Alignment2>
+	friend class Hybrid;
 };
 
-template<typename TBuilder, std::size_t TSize, std::size_t TAlignment>
-void swap( Hybrid<TBuilder, TSize, TAlignment>& lsh, Hybrid<TBuilder, TSize, TAlignment>& rsh );
+template<typename TBuilder, std::size_t Size, std::size_t Alignment, std::size_t Size2>
+void swap( Hybrid<TBuilder, Size, Alignment>& lsh, Hybrid<TBuilder, Size2, Alignment>& rsh ) noexcept;
+
+template<typename TBuilder, std::size_t Size, std::size_t Alignment>
+struct BuilderConfig<Hybrid<TBuilder, Size, Alignment>>
+{
+	static constexpr std::size_t size  = Size;
+	static constexpr std::size_t align = Alignment;
+};
 
 } // namespace crtp::storage
