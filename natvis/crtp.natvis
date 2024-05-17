@@ -2,10 +2,10 @@
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
 	<Type Name="crtp::storage::Storage&lt;*,*&gt;">
 		<DisplayString>
-			{{policy = {m_storage}}}
+			{{policy = {m_policy}}}
 		</DisplayString>
 		<Expand>
-			<Item Name="[policy]">m_storage</Item>
+			<Item Name="[policy]">m_policy</Item>
 		</Expand>
 	</Type>
 	<Type Name="crtp::storage::detail::Concept&lt;*&gt;">
@@ -34,7 +34,7 @@
 			{{OnStack&lt;{$T2},{$T3}&gt; data = {m_data}}}
 		</DisplayString>
 		<Expand>
-			<Item Name="[memory]">*(concept_t*)this->m_data._Elems</Item>
+			<Item Name="[memory]">(concept_t*)this->m_data._Elems</Item>
 			<Item Name="[data]">m_data</Item>
 		</Expand>
 	</Type>
@@ -43,7 +43,7 @@
 			{{Hybrid&lt;{$T2},{$T3}&gt; data = {m_data}}}
 		</DisplayString>
 		<Expand>
-			<Item Name="[inplace]" Condition="this->m_data._Which == 0">*(concept_t*)this->m_data._Head._Elems</Item>
+			<Item Name="[inplace]" Condition="this->m_data._Which == 0">(concept_t*)this->m_data._Head._Elems</Item>
 			<Item Name="[unique]" Condition="this->m_data._Which == 1">this->m_data._Tail._Head</Item>
 			<Item Name="[data]">m_data</Item>
 		</Expand>

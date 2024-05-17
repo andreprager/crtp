@@ -16,12 +16,16 @@ inline OnHeap<TBuilder>::OnHeap( T value )
 {}
 
 template<IBuilder TBuilder>
-inline OnHeap<TBuilder>::OnHeap( OnHeap const& src ) : m_data{ src.m_data->clone() }
-{}
+inline OnHeap<TBuilder>::OnHeap( OnHeap const& src )
+{
+	src.m_data->clone( m_data );
+}
 
 template<IBuilder TBuilder>
-inline OnHeap<TBuilder>::OnHeap( OnHeap&& src ) noexcept : m_data{ src.m_data->extract() }
-{}
+inline OnHeap<TBuilder>::OnHeap( OnHeap&& src ) noexcept
+{
+	src.m_data->extract( m_data );
+}
 
 template<IBuilder TBuilder>
 inline OnHeap<TBuilder>::~OnHeap()
@@ -32,14 +36,14 @@ inline OnHeap<TBuilder>::~OnHeap()
 template<IBuilder TBuilder>
 inline auto OnHeap<TBuilder>::operator=( OnHeap const& src ) -> OnHeap&
 {
-	m_data = src.m_data->clone();
+	src.m_data->clone( m_data );
 	return *this;
 }
 
 template<IBuilder TBuilder>
 inline auto OnHeap<TBuilder>::operator=( OnHeap&& src ) noexcept -> OnHeap&
 {
-	m_data = src.m_data->extract();
+	src.m_data->extract( m_data );
 	return *this;
 }
 
@@ -51,7 +55,7 @@ inline auto OnHeap<TBuilder>::swap( OnHeap& src ) noexcept -> OnHeap&
 }
 
 template<IBuilder TBuilder>
-inline void OnHeap<TBuilder>::swap_data( concept_ptr_t& src ) noexcept
+inline void OnHeap<TBuilder>::swap_data( clone_t& src ) noexcept
 {
 	m_data.swap( src );
 }

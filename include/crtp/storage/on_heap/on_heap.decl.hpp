@@ -15,7 +15,7 @@ class OnHeap
 public:
 	using builder_t     = TBuilder;
 	using concept_t     = builder_t::concept_t;
-	using concept_ptr_t = builder_t::concept_ptr_t;
+	using clone_t   = builder_t::clone_t;
 
 	template<typename T>
 	OnHeap( T value );
@@ -28,13 +28,13 @@ public:
 	OnHeap& swap( OnHeap& src ) noexcept;
 	/// @brief: Swap with externally created non-empty concept.
 	/// @pre:   src not empty
-	void swap_data( concept_ptr_t& src ) noexcept;
+	void swap_data( clone_t& src ) noexcept;
 
 	concept_t const* memory() const;
 	concept_t*       memory();
 
 private:
-	concept_ptr_t m_data{};
+	clone_t m_data{};
 };
 
 template<typename TBuilder>

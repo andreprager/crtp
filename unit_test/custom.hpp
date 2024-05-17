@@ -25,8 +25,9 @@ namespace custom
 class UserApiConcept : public crtp::storage::Concept<UserApiConcept>
 {
 public:
-	using concept_t = crtp::storage::Concept<UserApiConcept>;
-	using typename concept_t::clone_t;
+	using base_concept_t = crtp::storage::Concept<UserApiConcept>;
+	using typename base_concept_t::clone_t;
+	using typename base_concept_t::concept_t;
 
 	/// @brief: customizable interface functions
 	/// @customize
@@ -38,6 +39,24 @@ inline void call_user_api( UserApiConcept const& src )
 	src.user_api();
 }
 
+/// UserApiConceptDerived
+
+class UserApiConceptDerived
+  : public crtp::storage::ConceptUnderlying<UserApiConceptDerived, UserApiConcept>
+{
+public:
+	using base_concept_t = crtp::storage::ConceptUnderlying<UserApiConceptDerived, UserApiConcept>;
+
+	/// @brief: customizable interface functions
+	/// @customize
+	virtual void user_api_derived() const = 0;
+};
+
+inline void call_user_api_derived( UserApiConceptDerived const& src )
+{
+	src.user_api_derived();
+}
+
 /// UserApiModel
 
 /// @brief: Customized Model for some value of Type T.
@@ -47,14 +66,41 @@ template<typename T>
 class UserApiModel : public crtp::storage::Model<T, UserApiModel<T>, UserApiConcept>
 {
 public:
-	using model_t = crtp::storage::Model<T, UserApiModel<T>, UserApiConcept>;
-	UserApiModel( T value ) : model_t{ std::move( value ) }
+	using base_model_t = crtp::storage::Model<T, UserApiModel<T>, UserApiConcept>;
+	UserApiModel( T value ) : base_model_t{ std::move( value ) }
 	{}
 
 	/// @customize
 	void user_api() const override
 	{
 		call_user_api( this->m_value );
+	}
+};
+
+/// UserApiModelDerived
+
+/// @brief: Customized Model for some value of Type T.
+/// @pre:   Function call_user_api_derived(T) must exist.
+/// @customize: Define model once, implementing interface.
+template<typename T>
+class UserApiModelDerived
+  : public crtp::storage::ModelUnderlying<T, UserApiModelDerived<T>, UserApiConceptDerived, UserApiConcept>
+{
+public:
+	using base_model_t = crtp::storage::ModelUnderlying<T, UserApiModelDerived<T>, UserApiConceptDerived, UserApiConcept>;
+	UserApiModelDerived( T value ) : base_model_t{ std::move( value ) }
+	{}
+
+	/// @customize
+	void user_api() const override
+	{
+		call_user_api( this->m_value );
+	}
+
+	/// @customize
+	void user_api_derived() const override
+	{
+		call_user_api_derived( this->m_value );
 	}
 };
 
@@ -90,8 +136,55 @@ void call_user_api( UserApi<T> const& src )
 	src.user_api();
 }
 
+/// UserApiDerived
+
+/// @brief: Actual type erased value with some storage policy.
+/// @pre:   TPolicy concept_t must have a user_api_derived function.
+/// @customize: Default value implementation, accepting all value types.
+template<typename TPolicy>
+class UserApiDerived : public crtp::storage::Storage<UserApiDerived<TPolicy>, TPolicy>
+{
+public:
+	using storage_t = crtp::storage::Storage<UserApiDerived<TPolicy>, TPolicy>;
+
+	/// @brief:
+	/// @pre:   call_user_api function
+	template<typename T>
+	UserApiDerived( T value ) : storage_t{ std::move( value ) }
+	{}
+
+	void user_api() const
+	{
+		this->m_policy.memory()->user_api();
+	}
+
+	void user_api_derived() const
+	{
+		this->m_policy.memory()->user_api_derived();
+	}
+
+private:
+	template<typename T>
+	friend void call_user_api( UserApiDerived<T> const& src );
+	template<typename T>
+	friend void call_user_api_derived( UserApiDerived<T> const& src );
+};
+
+template<typename T>
+void call_user_api( UserApiDerived<T> const& src )
+{
+	src.user_api();
+}
+
+template<typename T>
+void call_user_api_derived( UserApiDerived<T> const& src )
+{
+	src.user_api_derived();
+}
+
 /// @brief: Default builder strategy for UserApi
-using UserApiBuilder = crtp::storage::Builder<UserApiModel, UserApiConcept>;
+using UserApiBuilder        = crtp::storage::Builder<UserApiModel, UserApiConcept>;
+using UserApiBuilderDerived = crtp::storage::Builder<UserApiModelDerived, UserApiConceptDerived>;
 
 /// Manual Virtual Dispatch for UserApi
 
@@ -123,8 +216,9 @@ private:
 class UserValueConcept : public crtp::storage::value::Concept<UserValueConcept>
 {
 public:
-	using concept_t = crtp::storage::value::Concept<UserValueConcept>;
-	using typename concept_t::clone_t;
+	using base_concept_t = crtp::storage::value::Concept<UserValueConcept>;
+	using typename base_concept_t::clone_t;
+	using typename base_concept_t::concept_t;
 };
 
 /// UserValueModel
@@ -217,12 +311,22 @@ bool operator!=( Array<TSize, TAlignment> const& lhs, Array<TSize, TAlignment> c
 /// @brief: Track last call to call_user_api with some Array
 template<std::size_t TSize = 128, std::size_t TAlignment = 16>
 Array<TSize, TAlignment> gs_array;
+/// @brief: Track last call to call_user_api_derived with some Array
+template<std::size_t TSize = 128, std::size_t TAlignment = 16>
+Array<TSize, TAlignment> gs_array_derived;
 
 /// @brief: Allows creating UserApiModel with Array
 template<std::size_t TSize = 128, std::size_t TAlignment = 16>
 inline void call_user_api( Array<TSize, TAlignment> const& src )
 {
 	gs_array<TSize, TAlignment> = src;
+}
+
+/// @brief: Allows creating UserApiModelDerived with Array
+template<std::size_t TSize = 128, std::size_t TAlignment = 16>
+inline void call_user_api_derived( Array<TSize, TAlignment> const& src )
+{
+	gs_array_derived<TSize, TAlignment> = src;
 }
 
 /// Vector
@@ -282,11 +386,19 @@ bool operator!=( Vector const& lhs, Vector const& rhs );
 
 /// @brief: Track last call to call_user_api with some Vector
 extern Vector gs_vector;
+/// @brief: Track last call to call_user_api_derived with some Vector
+extern Vector gs_vector_derived;
 
 /// @brief: Allows creating UserApiModel with Vector
 inline void call_user_api( Vector const& src )
 {
 	gs_vector = src;
+}
+
+/// @brief: Allows creating UserApiModelDerived with Vector
+inline void call_user_api_derived( Vector const& src )
+{
+	gs_vector_derived = src;
 }
 
 } // namespace custom

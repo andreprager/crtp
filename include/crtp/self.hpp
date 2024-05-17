@@ -22,8 +22,8 @@ public:
 	}
 
 private:
-	Self()
-	{}
+	Self() = default;
+
 	friend TInterface;
 	friend TDerived;
 };

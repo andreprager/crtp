@@ -26,10 +26,10 @@ concept PolicyCompatible = Policy<P0>&& Policy<P1>&& std::is_same_v<typename P0:
 template<typename P0, typename P1>
 concept PolicyCompatibleOther = PolicyCompatible<P0, P1> && !std::is_same_v<P0, P1>;
 
-template<typename PDst, typename PSrc>
+template<typename PSrc, typename PDst>
 concept PolicyAssign = Policy<PDst>&& Policy<PSrc>&& std::is_base_of_v<typename PDst::concept_t, typename PSrc::concept_t>;
-template<typename PDst, typename PSrc>
-concept PolicyAssignOther = PolicyAssign<PDst, PSrc> && !std::is_same_v<PDst, PSrc>;
+template<typename PSrc, typename PDst>
+concept PolicyAssignOther = PolicyAssign<PSrc, PDst> && !std::is_same_v<PDst, PSrc>;
 
 /// @brief: Trait for compatibility of two storage policies.
 // template<Policy P0, Policy P1, typename Enable = void>
@@ -77,17 +77,17 @@ concept StoragePolicyCompatible = Storage<S>&& Policy<P>&& PolicyCompatible<type
 template<typename S, typename P>
 concept StoragePolicyCompatibleOther = Storage<S>&& Policy<P>&& PolicyCompatibleOther<typename S::policy_t, P>;
 
-template<typename SDst, typename SSrc>
-concept StorageAssign = Storage<SDst>&& Storage<SSrc>&& PolicyAssign<typename SDst::policy_t, typename SSrc::policy_t>;
+template<typename SSrc, typename SDst>
+concept StorageAssign = Storage<SDst>&& Storage<SSrc>&& PolicyAssign<typename SSrc::policy_t, typename SDst::policy_t>;
 
-template<typename SDst, typename SSrc>
-concept StorageAssignOther = StorageAssign<SDst, SSrc> && !std::is_same_v<SDst, SSrc>;
+template<typename SSrc, typename SDst>
+concept StorageAssignOther = StorageAssign<SSrc, SDst> && !std::is_same_v<SDst, SSrc>;
 
-template<typename S, typename P>
-concept StoragePolicyAssign = Storage<S>&& Policy<P>&& PolicyAssign<typename S::policy_t, P>;
+template<typename P, typename S>
+concept StoragePolicyAssign = Storage<S>&& Policy<P>&& PolicyAssign<P, typename S::policy_t>;
 
-template<typename S, typename P>
-concept StoragePolicyAssignOther = Storage<S>&& Policy<P>&& PolicyAssignOther<typename S::policy_t, P>;
+template<typename P, typename S>
+concept StoragePolicyAssignOther = Storage<S>&& Policy<P>&& PolicyAssignOther<P, typename S::policy_t>;
 
 template<typename V>
 concept ValueArgument = !Storage<V> && !Policy<V>;

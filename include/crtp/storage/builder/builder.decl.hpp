@@ -6,29 +6,31 @@
 #include <concepts>
 #include <cstddef>
 #include <memory>
+#include <type_traits>
 #include <utility>
 
 namespace crtp::storage
 {
 /// @pre: concept_t
-/// @pre: concept_ptr_t
-/// @pre: concept_t* concept_ptr_t.operator->()
+/// @pre: clone_t
+/// @pre: concept_t* clone_t.operator->()
 /// @pre: B.destroy( concept_t* )
 template<typename B>
 concept IBuilder = requires( B b )
 {
+	0 != sizeof( typename B::memory_tag_t );
 	0 != sizeof( typename B::concept_t );
-	0 != sizeof( typename B::concept_ptr_t );
+	0 != sizeof( typename B::clone_t );
 	{
-		std::declval<typename B::concept_ptr_t>().operator->()
+		std::declval<typename B::clone_t>().operator->()
 	}
 	->std::convertible_to<typename B::concept_t*>;
 	b.destroy( std::declval<typename B::concept_t*>() );
 };
 
 /// @pre: concept_t
-/// @pre: concept_ptr_t
-/// @pre: concept_t* concept_ptr_t.operator->()
+/// @pre: clone_t
+/// @pre: concept_t* clone_t.operator->()
 /// @pre: B.destroy( concept_t* )
 
 /// @pre: B.build<T>( T )
@@ -39,12 +41,12 @@ concept IBuilderHeap = requires( B b )
 	{
 		b.template build<T>( std::declval<T>() )
 	}
-	->std::convertible_to<typename B::concept_ptr_t>;
+	->std::convertible_to<typename B::clone_t>;
 };
 
 /// @pre: concept_t
-/// @pre: concept_ptr_t
-/// @pre: concept_t* concept_ptr_t.operator->()
+/// @pre: clone_t
+/// @pre: concept_t* clone_t.operator->()
 /// @pre: B.destroy( concept_t* )
 
 /// @pre: B.destroy<Size>( array<byte, Size>& )
@@ -66,8 +68,8 @@ concept IBuilderStack = requires( B b )
 };
 
 /// @pre: concept_t
-/// @pre: concept_ptr_t
-/// @pre: concept_t* concept_ptr_t.operator->()
+/// @pre: clone_t
+/// @pre: concept_t* clone_t.operator->()
 /// @pre: B.destroy( concept_t* )
 /// @pre: B.destroy<Size>( array<byte, Size>& )
 /// @pre: concept_t const * B.memory<Size>( array<byte, Size> const& )
@@ -87,11 +89,25 @@ concept IBuilderInplace = requires( B b )
 	b.template inplace<Size, Alignment, T>( std::declval<typename B::concept_t*>(), std::declval<T>() );
 };
 
+/// @brief: Tag to identify if Builder is compatible regarding memory management of model.
+struct memory_default_tag
+{};
+
+/// @brief: Concept to check for same memory_tag of two builders.
+template<typename B0, typename B1>
+concept IBuilderMemoryCompatible
+    = IBuilder<B0>&& IBuilder<B1>&& std::is_same_v<typename B0::memory_tag_t, typename B1::memory_tag_t>;
+
+/// @brief: Concept to check for compatible underlying concept interface of two builders.
+template<typename BDst, typename BSrc>
+concept IBuilderCompatible
+    = IBuilderMemoryCompatible<BDst, BSrc>&& std::is_base_of_v<typename BDst::concept_t, typename BSrc::concept_t>;
+
 /// @brief: Standard builder strategy
 ///   @interface: Required for customized builder
 ///     @type: concept_t defining base class type
 ///     @function: template<typename T> build(args) to create concrete instance of base class
-///     @function: template<typename T> size(args) Needed size for object created with @args
+///     @function: template<typename T> size() Needed size for created model_t<T>.
 ///     @function: template<typename T> inplace(concept_t *address, args) to create concrete
 ///                instance of base class inplace at @address with @args.
 /// @tparam: TConcept  Base class for instantiated model
@@ -99,17 +115,18 @@ concept IBuilderInplace = requires( B b )
 template<template<typename> typename TModel, IConcept TConcept>
 struct Builder
 {
+	using memory_tag_t = memory_default_tag;
 	/// @brief: Actual interface.
 	using concept_t = TConcept;
 	/// @brief: Pointer to built interface.
-	using concept_ptr_t = std::unique_ptr<concept_t>;
+	using clone_t = std::unique_ptr<concept_t>;
 	/// @brief: Concrete model implementing the interface.
 	template<typename T>
 	using model_t = TModel<T>;
 
 	/// @brief: Build a new instance for some argument @value.
 	template<typename T>
-	static concept_ptr_t build( T&& value );
+	static clone_t build( T&& value );
 	/// @TechnicalDebt: Do we need also a function for alignment?
 	/// @brief: Required size for creating an instance with argument of type @T.
 	template<typename T>

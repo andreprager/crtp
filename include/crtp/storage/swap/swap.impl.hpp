@@ -11,9 +11,9 @@
 namespace crtp::storage
 {
 template<traits::Policy P0, traits::Policy P1>
-inline void swap_unsafe(P0& lsh, P1& rsh)
+inline void swap_unsafe( P0& lsh, P1& rsh )
 {
-	if (!swap(lsh, rsh))
+	if ( !swap( lsh, rsh ) )
 	{
 		throw std::invalid_argument( "Swap for storage.Policy failed." );
 	}
@@ -28,7 +28,9 @@ inline bool swap( OnHeap<TBuilder>& lsh, OnStack<TBuilder, Size, Alignment>& rsh
 	{
 		return false;
 	}
-	auto tmp = rsh.memory()->extract();
+	using clone_t = TBuilder::clone_t;
+	clone_t tmp{};
+	rsh.memory()->extract( tmp );
 	lsh.swap_data( tmp );
 	rsh.replace( std::move( *tmp ) );
 	return true;
@@ -64,7 +66,9 @@ inline bool swap( OnStack<TBuilder, Size2, Alignment>& lsh, Hybrid<TBuilder, Siz
 template<IBuilder TBuilder, std::size_t Size, std::size_t Alignment>
 inline bool swap( Hybrid<TBuilder, Size, Alignment>& lsh, OnHeap<TBuilder>& rsh ) noexcept
 {
-	auto tmp = lsh.memory()->extract();
+	using clone_t = TBuilder::clone_t;
+	clone_t tmp{};
+	lsh.memory()->extract( tmp );
 	rsh.swap_data( tmp );
 	lsh.replace( std::move( *tmp ) );
 	return true;

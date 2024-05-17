@@ -18,10 +18,10 @@ template<IBuilder TBuilder, std::size_t Size = 128, std::size_t Alignment = 16>
 class Hybrid
 {
 public:
-	using builder_t     = TBuilder;
-	using concept_t     = builder_t::concept_t;
-	using concept_ptr_t = builder_t::concept_ptr_t;
-	using buffer_t      = std::array<std::byte, Size>;
+	using builder_t = TBuilder;
+	using concept_t = builder_t::concept_t;
+	using clone_t   = builder_t::clone_t;
+	using buffer_t  = std::array<std::byte, Size>;
 	template<std::size_t Size2>
 	using buffer_other_t = std::array<std::byte, Size2>;
 	template<std::size_t Size2>
@@ -51,7 +51,7 @@ public:
 	Hybrid& replace( concept_t&& src ) noexcept;
 	/// @brief: Move construct @src into m_data into pointer if Size < src->size() otherwise into buffer.
 	///         Previous buffer content is destroyed if any.
-	Hybrid& replace( concept_ptr_t src ) noexcept;
+	Hybrid& replace( clone_t src ) noexcept;
 
 	Hybrid& swap( Hybrid& src ) noexcept;
 	template<std::size_t Size2>
@@ -61,16 +61,28 @@ public:
 	bool swap_data( buffer_other_t<Size2>& src ) noexcept;
 
 private:
+	using data_t = std::variant<buffer_t, std::unique_ptr<concept_t>>;
+
 	/// @brief: Copy construct @src into m_data, via clone. Previous buffer content is not destroyed if any.
+	///         Selection based on src.size().
 	/// @pre: m_data must not be constructed yet.
 	Hybrid& construct( concept_t const& src );
+	/// @brief: Copy construct @src into m_data, via clone. Previous buffer content is not destroyed if any.
+	///         Selection based on src.m_data.index().
+	/// @pre: m_data must not be constructed yet.
+	Hybrid& construct( Hybrid const& src );
 	/// @brief: Move construct @src into m_data, via extract. Previous buffer content is not destroyed if any.
+	///         Selection based on src.size().
 	/// @pre: m_data must not be constructed yet.
 	Hybrid& construct( concept_t&& src ) noexcept;
+	/// @brief: Move construct @src into m_data, via extract. Previous buffer content is not destroyed if any.
+	///         Selection based on src.m_data.index().
+	/// @pre: m_data must not be constructed yet.
+	Hybrid& construct( Hybrid&& src ) noexcept;
 	/// @brief: Move construct @src into m_data. via move (Size < src.size()) or move construct. Previous buffer content
 	/// is not destroyed if any.
 	/// @pre: m_data must not be constructed yet.
-	Hybrid& construct( concept_ptr_t src ) noexcept;
+	Hybrid& construct( clone_t src ) noexcept;
 
 	/// @pre: 0 == m_data.index()
 	concept_t const* buffer() const;
@@ -94,7 +106,8 @@ private:
 	template<std::size_t Size2>
 	Hybrid& swap_pointer( HybridSrc<Size2>& src, std::enable_if_t<Size != Size2, int> = 0 ) noexcept;
 
-	alignas( Alignment ) std::variant<buffer_t, std::unique_ptr<concept_t>> m_data;
+	alignas( Alignment ) data_t m_data;
+
 #if defined( _MSC_VER )
 	[[msvc::no_unique_address]] builder_t m_builder{};
 #else

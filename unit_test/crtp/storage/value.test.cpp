@@ -31,6 +31,17 @@ struct CrtpStorageValueT : public testing::Test
 	using policy_t = T;
 };
 
+TEST( CrtpStorageValue, ctor )
+{
+	using policy_t = OnStack<UserValueBuilder, 96>;
+	Vector const expected_vector{ 1024, std::uint8_t{ 42 } };
+
+	UserValue<policy_t> sot{ expected_vector };
+
+	auto value = *sot.cast<Vector>();
+	EXPECT_EQ( expected_vector, value );
+}
+
 // clang-format off
 using Test_types = ::testing::Types<
 	OnHeap <UserValueBuilder>,

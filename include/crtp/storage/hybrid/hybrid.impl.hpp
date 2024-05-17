@@ -13,7 +13,7 @@ template<IBuilder TBuilder, std::size_t Size, std::size_t Alignment>
 template<typename T>
 inline Hybrid<TBuilder, Size, Alignment>::Hybrid( T value )
 {
-	if constexpr ( builder_t::template size<T>() <= Size )
+	if constexpr ( m_builder.template size<T>() <= Size )
 	{
 		static_assert( IBuilderInplace<builder_t, Size, Alignment, T>, "Hybrid requires IBuilderInplace<TBuilder, T>." );
 		m_builder.template inplace<Size, Alignment>( buffer(), std::move( value ) );
@@ -21,40 +21,25 @@ inline Hybrid<TBuilder, Size, Alignment>::Hybrid( T value )
 	else
 	{
 		static_assert( IBuilderHeap<builder_t, T>, "Hybrid requires IBuilderHeap<TBuilder, T>." );
-		m_data = builder_t::build( std::move( value ) );
+		m_data = m_builder.build( std::move( value ) );
 	}
 }
 
 template<IBuilder TBuilder, std::size_t Size, std::size_t Alignment>
 inline Hybrid<TBuilder, Size, Alignment>::Hybrid( Hybrid const& src )
 {
-	if ( 0 == src.m_data.index() )
-	{
-		m_data.emplace<0>();
-		src.memory()->clone( buffer() );
-	}
-	else
-	{
-		m_data = std::get<1>( src.m_data )->clone();
-	}
+	construct( src );
 }
 
 template<IBuilder TBuilder, std::size_t Size, std::size_t Alignment>
 inline Hybrid<TBuilder, Size, Alignment>::Hybrid( Hybrid&& src ) noexcept
 {
-	if ( 0 == src.m_data.index() )
-	{
-		m_data.emplace<0>();
-		src.memory()->extract( buffer() );
-	}
-	else
-	{
-		m_data = std::get<1>( src.m_data )->extract();
-	}
+	construct( std::move( src ) );
 }
 
 template<IBuilder TBuilder, std::size_t Size, std::size_t Alignment>
-inline Hybrid<TBuilder, Size, Alignment>::Hybrid( traits::PolicyAssignOther<Hybrid<TBuilder, Size, Alignment>> auto src )
+inline Hybrid<TBuilder, Size, Alignment>::Hybrid(
+    traits::PolicyAssignOther<Hybrid<TBuilder, Size, Alignment>> auto src )
 {
 	construct( std::move( *src.memory() ) );
 }
@@ -70,37 +55,18 @@ inline auto Hybrid<TBuilder, Size, Alignment>::operator=( Hybrid const& src ) ->
 {
 	static_assert( IBuilderStack<builder_t, Size>, "Hybrid requires IBuilderStack<TBuilder, Size>." );
 
-	destroy();
-	if ( 0 == src.m_data.index() )
-	{
-		m_data.emplace<0>();
-		src.memory()->clone( buffer() );
-	}
-	else
-	{
-		m_data = std::get<1>( src.m_data )->clone();
-	}
-	return *this;
+	return destroy().construct( src );
 }
 
 template<IBuilder TBuilder, std::size_t Size, std::size_t Alignment>
 inline auto Hybrid<TBuilder, Size, Alignment>::operator=( Hybrid&& src ) noexcept -> Hybrid&
 {
-	destroy();
-	if ( 0 == src.m_data.index() )
-	{
-		m_data.emplace<0>();
-		src.memory()->extract( buffer() );
-	}
-	else
-	{
-		m_data = std::get<1>( src.m_data )->extract();
-	}
-	return *this;
+	return destroy().construct( std::move( src ) );
 }
 
 template<IBuilder TBuilder, std::size_t Size, std::size_t Alignment>
-inline auto Hybrid<TBuilder, Size, Alignment>::operator=( traits::PolicyAssignOther<Hybrid<TBuilder, Size, Alignment>> auto src ) noexcept -> Hybrid&
+inline auto Hybrid<TBuilder, Size, Alignment>::operator=(
+    traits::PolicyAssignOther<Hybrid<TBuilder, Size, Alignment>> auto src ) noexcept -> Hybrid&
 {
 	return replace( std::move( *src.memory() ) );
 }
@@ -130,7 +96,7 @@ inline auto Hybrid<TBuilder, Size, Alignment>::replace( concept_t&& src ) noexce
 }
 
 template<IBuilder TBuilder, std::size_t Size, std::size_t Alignment>
-inline auto Hybrid<TBuilder, Size, Alignment>::replace( concept_ptr_t src ) noexcept -> Hybrid&
+inline auto Hybrid<TBuilder, Size, Alignment>::replace( clone_t src ) noexcept -> Hybrid&
 {
 	return destroy().construct( std::move( src ) );
 }
@@ -157,6 +123,24 @@ inline bool Hybrid<TBuilder, Size, Alignment>::swap_data( buffer_other_t<Size2>&
 }
 
 template<IBuilder TBuilder, std::size_t Size, std::size_t Alignment>
+inline auto Hybrid<TBuilder, Size, Alignment>::construct( Hybrid const& src ) -> Hybrid&
+{
+	static_assert( IBuilderStack<builder_t, Size>, "Hybrid requires IBuilderStack<TBuilder, Size>." );
+
+	if ( 0 == src.m_data.index() )
+	{
+		m_data.emplace<0>();
+		src.memory()->clone( buffer() );
+	}
+	else
+	{
+		m_data.emplace<1>();
+		std::get<1>( src.m_data )->clone( std::get<1>( m_data ) );
+	}
+	return *this;
+}
+
+template<IBuilder TBuilder, std::size_t Size, std::size_t Alignment>
 inline auto Hybrid<TBuilder, Size, Alignment>::construct( concept_t const& src ) -> Hybrid&
 {
 	if ( src.size() <= Size )
@@ -166,7 +150,24 @@ inline auto Hybrid<TBuilder, Size, Alignment>::construct( concept_t const& src )
 	}
 	else
 	{
-		m_data = src.clone();
+		m_data.emplace<1>();
+		src.clone( std::get<1>( m_data ) );
+	}
+	return *this;
+}
+
+template<IBuilder TBuilder, std::size_t Size, std::size_t Alignment>
+inline auto Hybrid<TBuilder, Size, Alignment>::construct( Hybrid&& src ) noexcept -> Hybrid&
+{
+	if ( 0 == src.m_data.index() )
+	{
+		m_data.emplace<0>();
+		src.memory()->extract( buffer() );
+	}
+	else
+	{
+		m_data.emplace<1>();
+		std::get<1>( src.m_data )->extract( std::get<1>( m_data ) );
 	}
 	return *this;
 }
@@ -181,13 +182,14 @@ inline auto Hybrid<TBuilder, Size, Alignment>::construct( concept_t&& src ) noex
 	}
 	else
 	{
-		m_data = src.extract();
+		m_data.emplace<1>();
+		src.extract( std::get<1>( m_data ) );
 	}
 	return *this;
 }
 
 template<IBuilder TBuilder, std::size_t Size, std::size_t Alignment>
-inline auto Hybrid<TBuilder, Size, Alignment>::construct( concept_ptr_t src ) noexcept -> Hybrid&
+inline auto Hybrid<TBuilder, Size, Alignment>::construct( clone_t src ) noexcept -> Hybrid&
 {
 	if ( src->size() <= Size )
 	{

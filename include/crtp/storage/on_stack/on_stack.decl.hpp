@@ -18,6 +18,7 @@ class OnStack
 public:
 	using builder_t = TBuilder;
 	using concept_t = builder_t::concept_t;
+	using clone_t   = builder_t::clone_t;
 	using buffer_t  = std::array<std::byte, Size>;
 	template<std::size_t Size2>
 	using buffer_other_t = std::array<std::byte, Size2>;

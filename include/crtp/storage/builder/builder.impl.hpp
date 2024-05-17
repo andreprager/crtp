@@ -10,9 +10,9 @@ namespace crtp::storage
 {
 template<template<typename> typename TModel, IConcept TConcept>
 template<typename T>
-inline auto Builder<TModel, TConcept>::build( T&& value ) -> concept_ptr_t
+inline auto Builder<TModel, TConcept>::build( T&& value ) -> clone_t
 {
-	using M = model_t<T>;
+	using M = model_t<std::decay_t<T>>;
 	static_assert( std::is_base_of_v<concept_t, M>, "TConcept must be a base class of TModel." );
 	static_assert( IConcept<M>, "TConcept must be a base class of TModel." );
 	return std::make_unique<M>( std::forward<T>( value ) );
@@ -29,10 +29,10 @@ template<template<typename> typename TModel, IConcept TConcept>
 template<std::size_t Size, std::size_t Alignment, typename T>
 inline void Builder<TModel, TConcept>::inplace( concept_t* memory, T&& value )
 {
-	using M = model_t<T>;
+	using M = model_t<std::decay_t<T>>;
 	static_assert( size<T>() <= Size, "Size too small for model_t." );
 	static_assert( alignof( M ) <= Alignment, "Alignment too small for model_t." );
-	std::construct_at<M>( reinterpret_cast<M*>( memory ), std::forward<T>( value ) );
+	std::construct_at( static_cast<M*>( memory ), std::forward<T>( value ) );
 }
 
 template<template<typename> typename TModel, IConcept TConcept>

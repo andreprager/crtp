@@ -3,6 +3,7 @@
 namespace custom
 {
 Vector gs_vector;
+Vector gs_vector_derived;
 
 /// Vector
 

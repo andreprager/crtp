@@ -208,25 +208,25 @@ static void BM_crtp_storage_user( benchmark::State& state )
 }
 
 // clang-format off
-BENCHMARK( BM_crtp_storage_user<OnHeap<UserApiBuilder>, Vector> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_user<OnStack<UserApiBuilder, 64>, Vector> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_user<OnStack<UserApiBuilder, 128>, Vector> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_user<OnStack<UserApiBuilder, 256>, Vector> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_user<Hybrid<UserApiBuilder, 8>, Vector> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_user<Hybrid<UserApiBuilder, 16>, Vector> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_user<Hybrid<UserApiBuilder, 32>, Vector> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_user<Hybrid<UserApiBuilder, 64>, Vector> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_user<Hybrid<UserApiBuilder, 128>, Vector> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_user<Hybrid<UserApiBuilder, 256>, Vector> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_user<OnHeap<UserApiBuilder>, Array<64>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_user<OnStack<UserApiBuilder, 128>, Array<64>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_user<OnStack<UserApiBuilder, 256>, Array<64>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_user<Hybrid<UserApiBuilder, 8>, Array<64>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_user<Hybrid<UserApiBuilder, 16>, Array<64>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_user<Hybrid<UserApiBuilder, 32>, Array<64>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_user<Hybrid<UserApiBuilder, 64>, Array<64>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_user<Hybrid<UserApiBuilder, 128>, Array<64>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_user<Hybrid<UserApiBuilder, 256>, Array<64>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_user, OnHeap<UserApiBuilder>, Vector )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_user, OnStack<UserApiBuilder, 64>, Vector )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_user, OnStack<UserApiBuilder, 128>, Vector )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_user, OnStack<UserApiBuilder, 256>, Vector )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_user, Hybrid<UserApiBuilder, 8>, Vector )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_user, Hybrid<UserApiBuilder, 16>, Vector )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_user, Hybrid<UserApiBuilder, 32>, Vector )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_user, Hybrid<UserApiBuilder, 64>, Vector )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_user, Hybrid<UserApiBuilder, 128>, Vector )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_user, Hybrid<UserApiBuilder, 256>, Vector )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_user, OnHeap<UserApiBuilder>, Array<64> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_user, OnStack<UserApiBuilder, 128>, Array<64> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_user, OnStack<UserApiBuilder, 256>, Array<64> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_user, Hybrid<UserApiBuilder, 8>, Array<64> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_user, Hybrid<UserApiBuilder, 16>, Array<64> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_user, Hybrid<UserApiBuilder, 32>, Array<64> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_user, Hybrid<UserApiBuilder, 64>, Array<64> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_user, Hybrid<UserApiBuilder, 128>, Array<64> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_user, Hybrid<UserApiBuilder, 256>, Array<64> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
 // clang-format on
 
 template<typename T, typename C>
@@ -249,25 +249,25 @@ static void BM_crtp_storage_mvd( benchmark::State& state )
 }
 
 // clang-format off
-BENCHMARK( BM_crtp_storage_mvd<OnHeap<UserApiBuilder>, Vector> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_mvd<OnStack<UserApiBuilder, 64>, Vector> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_mvd<OnStack<UserApiBuilder, 128>, Vector> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_mvd<OnStack<UserApiBuilder, 256>, Vector> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_mvd<Hybrid<UserApiBuilder, 8>, Vector> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_mvd<Hybrid<UserApiBuilder, 16>, Vector> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_mvd<Hybrid<UserApiBuilder, 32>, Vector> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_mvd<Hybrid<UserApiBuilder, 64>, Vector> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_mvd<Hybrid<UserApiBuilder, 128>, Vector> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_mvd<Hybrid<UserApiBuilder, 256>, Vector> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_mvd<OnHeap<UserApiBuilder>, Array<64>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_mvd<OnStack<UserApiBuilder, 128>, Array<64>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_mvd<OnStack<UserApiBuilder, 256>, Array<64>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_mvd<Hybrid<UserApiBuilder, 8>, Array<64>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_mvd<Hybrid<UserApiBuilder, 16>, Array<64>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_mvd<Hybrid<UserApiBuilder, 32>, Array<64>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_mvd<Hybrid<UserApiBuilder, 64>, Array<64>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_mvd<Hybrid<UserApiBuilder, 128>, Array<64>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_mvd<Hybrid<UserApiBuilder, 256>, Array<64>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_mvd, OnHeap<UserApiBuilder>, Vector )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_mvd, OnStack<UserApiBuilder, 64>, Vector )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_mvd, OnStack<UserApiBuilder, 128>, Vector )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_mvd, OnStack<UserApiBuilder, 256>, Vector )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_mvd, Hybrid<UserApiBuilder, 8>, Vector )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_mvd, Hybrid<UserApiBuilder, 16>, Vector )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_mvd, Hybrid<UserApiBuilder, 32>, Vector )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_mvd, Hybrid<UserApiBuilder, 64>, Vector )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_mvd, Hybrid<UserApiBuilder, 128>, Vector )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_mvd, Hybrid<UserApiBuilder, 256>, Vector )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_mvd, OnHeap<UserApiBuilder>, Array<64> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_mvd, OnStack<UserApiBuilder, 128>, Array<64> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_mvd, OnStack<UserApiBuilder, 256>, Array<64> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_mvd, Hybrid<UserApiBuilder, 8>, Array<64> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_mvd, Hybrid<UserApiBuilder, 16>, Array<64> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_mvd, Hybrid<UserApiBuilder, 32>, Array<64> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_mvd, Hybrid<UserApiBuilder, 64>, Array<64> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_mvd, Hybrid<UserApiBuilder, 128>, Array<64> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_mvd, Hybrid<UserApiBuilder, 256>, Array<64> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
 // clang-format on
 
 /// std::vector
@@ -358,35 +358,35 @@ static void BM_crtp_storage_vector_user( benchmark::State& state )
 }
 
 // clang-format off
-BENCHMARK( BM_crtp_storage_vector_user<OnHeap<UserApiBuilder>, BuilderVector<Vector>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_vector_user<OnStack<UserApiBuilder, 64>, BuilderVector<Vector>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_vector_user<OnStack<UserApiBuilder, 128>, BuilderVector<Vector>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_vector_user<OnStack<UserApiBuilder, 256>, BuilderVector<Vector>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_vector_user<Hybrid<UserApiBuilder, 8>, BuilderVector<Vector>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_vector_user<Hybrid<UserApiBuilder, 16>, BuilderVector<Vector>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_vector_user<Hybrid<UserApiBuilder, 32>, BuilderVector<Vector>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_vector_user<Hybrid<UserApiBuilder, 64>, BuilderVector<Vector>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_vector_user<Hybrid<UserApiBuilder, 128>, BuilderVector<Vector>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_vector_user<Hybrid<UserApiBuilder, 256>, BuilderVector<Vector>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_vector_user<OnHeap<UserApiBuilder>, BuilderVector<Array<64>>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_vector_user<OnStack<UserApiBuilder, 128>, BuilderVector<Array<64>>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_vector_user<OnStack<UserApiBuilder, 256>, BuilderVector<Array<64>>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_vector_user<Hybrid<UserApiBuilder, 8>, BuilderVector<Array<64>>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_vector_user<Hybrid<UserApiBuilder, 16>, BuilderVector<Array<64>>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_vector_user<Hybrid<UserApiBuilder, 32>, BuilderVector<Array<64>>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_vector_user<Hybrid<UserApiBuilder, 64>, BuilderVector<Array<64>>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_vector_user<Hybrid<UserApiBuilder, 128>, BuilderVector<Array<64>>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_vector_user<Hybrid<UserApiBuilder, 256>, BuilderVector<Array<64>>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_vector_user, OnHeap<UserApiBuilder>, BuilderVector<Vector> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_vector_user, OnStack<UserApiBuilder, 64>, BuilderVector<Vector> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_vector_user, OnStack<UserApiBuilder, 128>, BuilderVector<Vector> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_vector_user, OnStack<UserApiBuilder, 256>, BuilderVector<Vector> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_vector_user, Hybrid<UserApiBuilder, 8>, BuilderVector<Vector> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_vector_user, Hybrid<UserApiBuilder, 16>, BuilderVector<Vector> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_vector_user, Hybrid<UserApiBuilder, 32>, BuilderVector<Vector> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_vector_user, Hybrid<UserApiBuilder, 64>, BuilderVector<Vector> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_vector_user, Hybrid<UserApiBuilder, 128>, BuilderVector<Vector> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_vector_user, Hybrid<UserApiBuilder, 256>, BuilderVector<Vector> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_vector_user, OnHeap<UserApiBuilder>, BuilderVector<Array<64>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_vector_user, OnStack<UserApiBuilder, 128>, BuilderVector<Array<64>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_vector_user, OnStack<UserApiBuilder, 256>, BuilderVector<Array<64>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_vector_user, Hybrid<UserApiBuilder, 8>, BuilderVector<Array<64>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_vector_user, Hybrid<UserApiBuilder, 16>, BuilderVector<Array<64>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_vector_user, Hybrid<UserApiBuilder, 32>, BuilderVector<Array<64>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_vector_user, Hybrid<UserApiBuilder, 64>, BuilderVector<Array<64>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_vector_user, Hybrid<UserApiBuilder, 128>, BuilderVector<Array<64>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_vector_user, Hybrid<UserApiBuilder, 256>, BuilderVector<Array<64>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
 // mixed
-BENCHMARK( BM_crtp_storage_vector_user<OnHeap<UserApiBuilder>, BuilderVector<>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_vector_user<OnStack<UserApiBuilder, 128>, BuilderVector<>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_vector_user<OnStack<UserApiBuilder, 256>, BuilderVector<>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_vector_user<Hybrid<UserApiBuilder, 8>, BuilderVector<>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_vector_user<Hybrid<UserApiBuilder, 16>, BuilderVector<>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_vector_user<Hybrid<UserApiBuilder, 32>, BuilderVector<>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_vector_user<Hybrid<UserApiBuilder, 64>, BuilderVector<>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_vector_user<Hybrid<UserApiBuilder, 128>, BuilderVector<>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
-BENCHMARK( BM_crtp_storage_vector_user<Hybrid<UserApiBuilder, 256>, BuilderVector<>> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_vector_user, OnHeap<UserApiBuilder>, BuilderVector<> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_vector_user, OnStack<UserApiBuilder, 128>, BuilderVector<> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_vector_user, OnStack<UserApiBuilder, 256>, BuilderVector<> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_vector_user, Hybrid<UserApiBuilder, 8>, BuilderVector<> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_vector_user, Hybrid<UserApiBuilder, 16>, BuilderVector<> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_vector_user, Hybrid<UserApiBuilder, 32>, BuilderVector<> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_vector_user, Hybrid<UserApiBuilder, 64>, BuilderVector<> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_vector_user, Hybrid<UserApiBuilder, 128>, BuilderVector<> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
+BENCHMARK_TEMPLATE( BM_crtp_storage_vector_user, Hybrid<UserApiBuilder, 256>, BuilderVector<> )->RangeMultiplier( gsc_mul )->Range( gsc_min, gsc_max );
 // clang-format on
 
 } // namespace crtp::storage

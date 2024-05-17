@@ -12,6 +12,7 @@ namespace crtp::storage
 template<IBuilder TBuilder, std::size_t Size, std::size_t Alignment>
 template<typename T>
 inline OnStack<TBuilder, Size, Alignment>::OnStack( T value )
+	: m_data{}
 {
 	static_assert( IBuilderInplace<builder_t, Size, Alignment, T>,
 	               "OnStack requires IBuilderInplace<TBuilder, Size, Alignment, T>." );
