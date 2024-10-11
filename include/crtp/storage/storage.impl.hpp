@@ -11,12 +11,26 @@ inline Storage<TDerived, TPolicy>::Storage( traits::ValueArgument auto value ) :
 {}
 
 template<typename TDerived, traits::Policy TPolicy>
-inline Storage<TDerived, TPolicy>::Storage( traits::StorageAssignOther<Storage<TDerived, TPolicy>> auto src )
+inline Storage<TDerived, TPolicy>::Storage( traits::StorageAssignOther<Storage<TDerived, TPolicy>> auto const& src )
+  : m_policy{ src.m_policy }
+{}
+
+template<typename TDerived, traits::Policy TPolicy>
+inline Storage<TDerived, TPolicy>::Storage( traits::StorageAssignOther<Storage<TDerived, TPolicy>> auto&& src )
   : m_policy{ std::move( src.m_policy ) }
 {}
 
 template<typename TDerived, traits::Policy TPolicy>
-inline auto Storage<TDerived, TPolicy>::operator=( traits::StorageAssignOther<Storage<TDerived, TPolicy>> auto src )
+inline auto
+    Storage<TDerived, TPolicy>::operator=( traits::StorageAssignOther<Storage<TDerived, TPolicy>> auto const& src )
+        -> Storage&
+{
+	m_policy = src.m_policy;
+	return *this;
+}
+
+template<typename TDerived, traits::Policy TPolicy>
+inline auto Storage<TDerived, TPolicy>::operator=( traits::StorageAssignOther<Storage<TDerived, TPolicy>> auto&& src )
     -> Storage&
 {
 	m_policy = std::move( src.m_policy );

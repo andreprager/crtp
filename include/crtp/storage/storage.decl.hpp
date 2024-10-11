@@ -51,9 +51,11 @@ public:
 	policy_t&       policy();
 
 	/// @brief: Ctor for different but compatible policy, i.e. same underlying concept.
-	Storage( traits::StorageAssignOther<Storage<TDerived, TPolicy>> auto src );
+	Storage( traits::StorageAssignOther<Storage<TDerived, TPolicy>> auto const& src );
+	Storage( traits::StorageAssignOther<Storage<TDerived, TPolicy>> auto&& src );
 	/// @brief: Value assign for different but compatible policy, i.e. same underlying concept.
-	Storage& operator=( traits::StorageAssignOther<Storage<TDerived, TPolicy>> auto src );
+	Storage& operator=( traits::StorageAssignOther<Storage<TDerived, TPolicy>> auto const& src );
+	Storage& operator=( traits::StorageAssignOther<Storage<TDerived, TPolicy>> auto&& src );
 
 protected:
 	policy_t m_policy;

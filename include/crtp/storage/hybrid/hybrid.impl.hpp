@@ -10,9 +10,9 @@
 namespace crtp::storage
 {
 template<IBuilder TBuilder, std::size_t Size, std::size_t Alignment>
-template<typename T>
-inline Hybrid<TBuilder, Size, Alignment>::Hybrid( T value )
+inline Hybrid<TBuilder, Size, Alignment>::Hybrid( traits::NotPolicy auto value )
 {
+	using T = std::decay_t<decltype(value)>;
 	if constexpr ( m_builder.template size<T>() <= Size )
 	{
 		static_assert( IBuilderInplace<builder_t, Size, Alignment, T>, "Hybrid requires IBuilderInplace<TBuilder, T>." );
@@ -39,7 +39,14 @@ inline Hybrid<TBuilder, Size, Alignment>::Hybrid( Hybrid&& src ) noexcept
 
 template<IBuilder TBuilder, std::size_t Size, std::size_t Alignment>
 inline Hybrid<TBuilder, Size, Alignment>::Hybrid(
-    traits::PolicyAssignOther<Hybrid<TBuilder, Size, Alignment>> auto src )
+    traits::PolicyAssignOther<Hybrid<TBuilder, Size, Alignment>> auto const& src )
+{
+	construct( *src.memory() );
+}
+
+template<IBuilder TBuilder, std::size_t Size, std::size_t Alignment>
+inline Hybrid<TBuilder, Size, Alignment>::Hybrid(
+    traits::PolicyAssignOther<Hybrid<TBuilder, Size, Alignment>> auto&& src )
 {
 	construct( std::move( *src.memory() ) );
 }
@@ -66,7 +73,14 @@ inline auto Hybrid<TBuilder, Size, Alignment>::operator=( Hybrid&& src ) noexcep
 
 template<IBuilder TBuilder, std::size_t Size, std::size_t Alignment>
 inline auto Hybrid<TBuilder, Size, Alignment>::operator=(
-    traits::PolicyAssignOther<Hybrid<TBuilder, Size, Alignment>> auto src ) noexcept -> Hybrid&
+    traits::PolicyAssignOther<Hybrid<TBuilder, Size, Alignment>> auto const& src ) noexcept -> Hybrid&
+{
+	return replace( *src.memory() );
+}
+
+template<IBuilder TBuilder, std::size_t Size, std::size_t Alignment>
+inline auto Hybrid<TBuilder, Size, Alignment>::operator=(
+    traits::PolicyAssignOther<Hybrid<TBuilder, Size, Alignment>> auto&& src ) noexcept -> Hybrid&
 {
 	return replace( std::move( *src.memory() ) );
 }
@@ -129,12 +143,12 @@ inline auto Hybrid<TBuilder, Size, Alignment>::construct( Hybrid const& src ) ->
 
 	if ( 0 == src.m_data.index() )
 	{
-		m_data.emplace<0>();
+		m_data.template emplace<0>();
 		src.memory()->clone( buffer() );
 	}
 	else
 	{
-		m_data.emplace<1>();
+		m_data.template emplace<1>();
 		std::get<1>( src.m_data )->clone( std::get<1>( m_data ) );
 	}
 	return *this;
@@ -145,12 +159,12 @@ inline auto Hybrid<TBuilder, Size, Alignment>::construct( concept_t const& src )
 {
 	if ( src.size() <= Size )
 	{
-		m_data.emplace<0>();
+		m_data.template emplace<0>();
 		src.clone( buffer() );
 	}
 	else
 	{
-		m_data.emplace<1>();
+		m_data.template emplace<1>();
 		src.clone( std::get<1>( m_data ) );
 	}
 	return *this;
@@ -161,12 +175,12 @@ inline auto Hybrid<TBuilder, Size, Alignment>::construct( Hybrid&& src ) noexcep
 {
 	if ( 0 == src.m_data.index() )
 	{
-		m_data.emplace<0>();
+		m_data.template emplace<0>();
 		src.memory()->extract( buffer() );
 	}
 	else
 	{
-		m_data.emplace<1>();
+		m_data.template emplace<1>();
 		std::get<1>( src.m_data )->extract( std::get<1>( m_data ) );
 	}
 	return *this;
@@ -177,12 +191,12 @@ inline auto Hybrid<TBuilder, Size, Alignment>::construct( concept_t&& src ) noex
 {
 	if ( src.size() <= Size )
 	{
-		m_data.emplace<0>();
+		m_data.template emplace<0>();
 		src.extract( buffer() );
 	}
 	else
 	{
-		m_data.emplace<1>();
+		m_data.template emplace<1>();
 		src.extract( std::get<1>( m_data ) );
 	}
 	return *this;
@@ -193,7 +207,7 @@ inline auto Hybrid<TBuilder, Size, Alignment>::construct( clone_t src ) noexcept
 {
 	if ( src->size() <= Size )
 	{
-		m_data.emplace<0>();
+		m_data.template emplace<0>();
 		src->extract( buffer() );
 	}
 	else
@@ -237,7 +251,7 @@ inline auto Hybrid<TBuilder, Size, Alignment>::swap_buffer_pointer( Hybrid& src 
 	// save @src unique_ptr
 	auto tmp = std::move( std::get<1>( src.m_data ) );
 	// move this buffer concept to @src
-	src.m_data.emplace<0>();
+	src.m_data.template emplace<0>();
 	buffer()->extract( src.buffer() );
 	destroy_buffer();
 	// move saved @src unique_ptr to this

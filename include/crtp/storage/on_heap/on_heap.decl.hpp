@@ -17,8 +17,7 @@ public:
 	using concept_t     = builder_t::concept_t;
 	using clone_t   = builder_t::clone_t;
 
-	template<typename T>
-	OnHeap( T value );
+	OnHeap( traits::NotPolicy auto value );
 	OnHeap( OnHeap const& src );
 	OnHeap( OnHeap&& src ) noexcept;
 	~OnHeap();

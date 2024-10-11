@@ -7,9 +7,9 @@
 namespace crtp::storage
 {
 template<IBuilder TBuilder>
-template<typename T>
-inline OnHeap<TBuilder>::OnHeap( T value )
+inline OnHeap<TBuilder>::OnHeap( traits::NotPolicy auto value )
   : m_data{ [ & ]() {
+	  using T = std::decay_t<decltype( value )>;
 	  static_assert( IBuilderHeap<builder_t, T>, "OnHeap requires IBuilderHeap<TBuilder, T>." );
 	  return builder_t::build( std::move( value ) );
 	}() }

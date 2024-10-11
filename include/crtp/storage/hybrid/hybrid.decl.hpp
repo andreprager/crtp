@@ -27,20 +27,21 @@ public:
 	template<std::size_t Size2>
 	using HybridSrc = Hybrid<TBuilder, Size2, Alignment>;
 
-	template<typename T>
-	Hybrid( T value );
+	Hybrid( traits::NotPolicy auto value );
 
 	Hybrid( Hybrid const& src );
 	Hybrid( Hybrid&& src ) noexcept;
 
-	Hybrid( traits::PolicyAssignOther<Hybrid<TBuilder, Size, Alignment>> auto src );
+	Hybrid( traits::PolicyAssignOther<Hybrid<TBuilder, Size, Alignment>> auto const& src );
+	Hybrid( traits::PolicyAssignOther<Hybrid<TBuilder, Size, Alignment>> auto&& src );
 
 	~Hybrid();
 
 	Hybrid& operator=( Hybrid const& src );
 	Hybrid& operator=( Hybrid&& src ) noexcept;
 
-	Hybrid& operator=( traits::PolicyAssignOther<Hybrid<TBuilder, Size, Alignment>> auto src ) noexcept;
+	Hybrid& operator=( traits::PolicyAssignOther<Hybrid<TBuilder, Size, Alignment>> auto const& src ) noexcept;
+	Hybrid& operator=( traits::PolicyAssignOther<Hybrid<TBuilder, Size, Alignment>> auto&& src ) noexcept;
 
 	concept_t const* memory() const;
 	concept_t*       memory();

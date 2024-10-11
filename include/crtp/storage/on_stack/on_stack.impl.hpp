@@ -10,10 +10,9 @@
 namespace crtp::storage
 {
 template<IBuilder TBuilder, std::size_t Size, std::size_t Alignment>
-template<typename T>
-inline OnStack<TBuilder, Size, Alignment>::OnStack( T value )
-	: m_data{}
+inline OnStack<TBuilder, Size, Alignment>::OnStack( traits::NotPolicy auto value ) : m_data{}
 {
+	using T = std::decay_t<decltype(value)>;
 	static_assert( IBuilderInplace<builder_t, Size, Alignment, T>,
 	               "OnStack requires IBuilderInplace<TBuilder, Size, Alignment, T>." );
 	m_builder.template inplace<Size, Alignment>( memory(), std::move( value ) );
@@ -33,8 +32,18 @@ inline OnStack<TBuilder, Size, Alignment>::OnStack( OnStack&& src ) noexcept : m
 
 template<IBuilder TBuilder, std::size_t Size, std::size_t Alignment>
 inline OnStack<TBuilder, Size, Alignment>::OnStack(
-    traits::PolicyAssignOther<OnStack<TBuilder, Size, Alignment>> auto src )
-  : m_data{}
+    traits::PolicyAssignOther<OnStack<TBuilder, Size, Alignment>> auto const& src )
+{
+	if ( Size < src.memory()->size() )
+	{
+		throw std::length_error( "OnStack.extract: Buffer too small." );
+	}
+	src.memory()->clone( memory() );
+}
+
+template<IBuilder TBuilder, std::size_t Size, std::size_t Alignment>
+inline OnStack<TBuilder, Size, Alignment>::OnStack(
+    traits::PolicyAssignOther<OnStack<TBuilder, Size, Alignment>> auto&& src )
 {
 	if ( Size < src.memory()->size() )
 	{
@@ -67,7 +76,20 @@ inline auto OnStack<TBuilder, Size, Alignment>::operator=( OnStack&& src ) noexc
 
 template<IBuilder TBuilder, std::size_t Size, std::size_t Alignment>
 inline auto OnStack<TBuilder, Size, Alignment>::operator=(
-    traits::PolicyAssignOther<OnStack<TBuilder, Size, Alignment>> auto src ) -> OnStack&
+    traits::PolicyAssignOther<OnStack<TBuilder, Size, Alignment>> auto const& src ) -> OnStack&
+{
+	if ( Size < src.memory()->size() )
+	{
+		throw std::length_error( "OnStack.extract assign: Buffer too small." );
+	}
+	destroy();
+	src.memory()->clone( memory() );
+	return *this;
+}
+
+template<IBuilder TBuilder, std::size_t Size, std::size_t Alignment>
+inline auto OnStack<TBuilder, Size, Alignment>::operator=(
+    traits::PolicyAssignOther<OnStack<TBuilder, Size, Alignment>> auto&& src ) -> OnStack&
 {
 	if ( Size < src.memory()->size() )
 	{

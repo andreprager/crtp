@@ -21,6 +21,9 @@ concept Policy = requires( P p )
 	->std::convertible_to<typename P::concept_t*>;
 };
 
+template<typename P>
+concept NotPolicy = !Policy<P>;
+
 template<typename P0, typename P1>
 concept PolicyCompatible = Policy<P0>&& Policy<P1>&& std::is_same_v<typename P0::concept_t, typename P1::concept_t>;
 template<typename P0, typename P1>
@@ -64,6 +67,9 @@ concept Storage = requires( S s )
 	}
 	->std::convertible_to<typename S::policy_t const&>;
 };
+
+template<typename S>
+concept NotStorage = !Storage<S>;
 
 template<typename S0, typename S1>
 concept StorageCompatible = Storage<S0>&& Storage<S1>&& PolicyCompatible<typename S0::policy_t, typename S1::policy_t>;

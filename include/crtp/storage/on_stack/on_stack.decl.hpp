@@ -25,20 +25,21 @@ public:
 	template<std::size_t Size2>
 	using OnStackSrc = OnStack<builder_t, Size2, Alignment>;
 
-	template<typename T>
-	OnStack( T value );
+	OnStack( traits::NotPolicy auto value );
 
 	OnStack( OnStack const& src );
 	OnStack( OnStack&& src ) noexcept;
 
-	OnStack( traits::PolicyAssignOther<OnStack<TBuilder, Size, Alignment>> auto src );
+	OnStack( traits::PolicyAssignOther<OnStack<TBuilder, Size, Alignment>> auto const& src );
+	OnStack( traits::PolicyAssignOther<OnStack<TBuilder, Size, Alignment>> auto&& src );
 
 	~OnStack();
 
 	OnStack& operator=( OnStack const& src );
 	OnStack& operator=( OnStack&& src ) noexcept;
 
-	OnStack& operator=( traits::PolicyAssignOther<OnStack<TBuilder, Size, Alignment>> auto src );
+	OnStack& operator=( traits::PolicyAssignOther<OnStack<TBuilder, Size, Alignment>> auto const& src );
+	OnStack& operator=( traits::PolicyAssignOther<OnStack<TBuilder, Size, Alignment>> auto&& src );
 
 	/// @brief:
 	buffer_t&       buffer();
