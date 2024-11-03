@@ -177,7 +177,7 @@ template<typename T>
 using is_str = std::is_same<std::string, T>;
 template<typename T>
 using is_cstr = std::is_same<std::string const, T>;
-}
+} // namespace
 
 TEST( CrtpTypeList, find_type_if )
 {
@@ -185,21 +185,21 @@ TEST( CrtpTypeList, find_type_if )
 
 	{
 		constexpr std::size_t const index = FindTypeIf_v<std::is_const, type_list_t>;
-		using sot_t = FindTypeIf_t<std::is_const, type_list_t>;
-		constexpr bool const valid = std::is_same_v<int const, sot_t>;
+		using sot_t                       = FindTypeIf_t<std::is_const, type_list_t>;
+		constexpr bool const valid        = std::is_same_v<int const, sot_t>;
 		EXPECT_EQ( 1, index );
 		EXPECT_TRUE( valid ) << "sot_t = " << typeid( sot_t ).name();
 	}
 	{
 		constexpr std::size_t const index = FindTypeIf_v<is_cstr, type_list_t>;
-		using sot_t = FindTypeIf_t<is_cstr, type_list_t>;
-		constexpr bool const valid = std::is_same_v<std::string const, sot_t>;
+		using sot_t                       = FindTypeIf_t<is_cstr, type_list_t>;
+		constexpr bool const valid        = std::is_same_v<std::string const, sot_t>;
 		EXPECT_EQ( 3, index );
 		EXPECT_TRUE( valid ) << "sot_t = " << typeid( sot_t ).name();
 	}
 	{
 		constexpr std::size_t const index = FindTypeIf_v<is_str, type_list_t>;
-		using sot_t = FindTypeIf_t<is_str, type_list_t>;
+		using sot_t                       = FindTypeIf_t<is_str, type_list_t>;
 		EXPECT_EQ( 4, index );
 	}
 }
@@ -246,6 +246,30 @@ TEST( CrtpTypeList, concat )
 	EXPECT_TRUE( same ) << typeid( sot_t ).name();
 }
 
+TEST( CrtpTypeList, push_back )
+{
+	using list_t      = TypeList<int, float>;
+	using push_t      = TypeList<long, std::string>;
+	using expected_t = TypeList<int, float, push_t>;
+
+	using sot_t = TypeListPushBack_t<push_t, list_t>;
+
+	auto const same = std::is_same_v<expected_t, sot_t>;
+	EXPECT_TRUE( same ) << typeid( sot_t ).name();
+}
+
+TEST( CrtpTypeList, push_front )
+{
+	using list_t     = TypeList<int, float>;
+	using push_t     = TypeList<long, std::string>;
+	using expected_t = TypeList<push_t, int, float>;
+
+	using sot_t = TypeListPushFront_t<push_t, list_t>;
+
+	auto const same = std::is_same_v<expected_t, sot_t>;
+	EXPECT_TRUE( same ) << typeid( sot_t ).name();
+}
+
 TEST( CrtpTypeList, flatten )
 {
 	using lhs_t      = TypeList<int, float>;
@@ -263,183 +287,183 @@ TEST( CrtpTypeList, remove_at )
 	using list_t = TypeList<void, int, float, double, long, std::string>;
 
 	{
-	using sot_t = TypeListRemoveAt_t<-1, list_t>;
-	using expected_t = list_t;
+		using sot_t      = TypeListRemoveAt_t<-1, list_t>;
+		using expected_t = list_t;
 
-	auto const same = std::is_same_v<expected_t, sot_t>;
-	EXPECT_TRUE( same ) << typeid( sot_t ).name();
+		auto const same = std::is_same_v<expected_t, sot_t>;
+		EXPECT_TRUE( same ) << typeid( sot_t ).name();
 	}
 
 	{
-	using sot_t = TypeListRemoveAt_t<0, list_t>;
-	using expected_t = TypeList<int, float, double, long, std::string>;
+		using sot_t      = TypeListRemoveAt_t<0, list_t>;
+		using expected_t = TypeList<int, float, double, long, std::string>;
 
-	auto const same = std::is_same_v<expected_t, sot_t>;
-	EXPECT_TRUE( same ) << typeid( sot_t ).name();
+		auto const same = std::is_same_v<expected_t, sot_t>;
+		EXPECT_TRUE( same ) << typeid( sot_t ).name();
 	}
 
 	{
-	using sot_t = TypeListRemoveAt_t<3, list_t>;
-	using expected_t = TypeList<void, int, float, long, std::string>;
+		using sot_t      = TypeListRemoveAt_t<3, list_t>;
+		using expected_t = TypeList<void, int, float, long, std::string>;
 
-	auto const same = std::is_same_v<expected_t, sot_t>;
-	EXPECT_TRUE( same ) << typeid( sot_t ).name();
+		auto const same = std::is_same_v<expected_t, sot_t>;
+		EXPECT_TRUE( same ) << typeid( sot_t ).name();
 	}
 
 	{
-	using sot_t = TypeListRemoveAt_t<5, list_t>;
-	using expected_t = TypeList<void, int, float, double, long>;
+		using sot_t      = TypeListRemoveAt_t<5, list_t>;
+		using expected_t = TypeList<void, int, float, double, long>;
 
-	auto const same = std::is_same_v<expected_t, sot_t>;
-	EXPECT_TRUE( same ) << typeid( sot_t ).name();
+		auto const same = std::is_same_v<expected_t, sot_t>;
+		EXPECT_TRUE( same ) << typeid( sot_t ).name();
 	}
 
 	{
-	using sot_t = TypeListRemoveAt_t<6, list_t>;
-	using expected_t = list_t;
+		using sot_t      = TypeListRemoveAt_t<6, list_t>;
+		using expected_t = list_t;
 
-	auto const same = std::is_same_v<expected_t, sot_t>;
-	EXPECT_TRUE( same ) << typeid( sot_t ).name();
+		auto const same = std::is_same_v<expected_t, sot_t>;
+		EXPECT_TRUE( same ) << typeid( sot_t ).name();
 	}
 }
 
 TEST( CrtpTypeList, remove )
 {
-	using nested_t =  TypeList<float, double, long>;
-	using list_t = TypeList<void, int, nested_t, std::string>;
+	using nested_t = TypeList<float, double, long>;
+	using list_t   = TypeList<void, int, nested_t, std::string>;
 
 	{
-	using sot_t = TypeListRemove_t<void*, list_t>;
-	using expected_t = list_t;
+		using sot_t      = TypeListRemove_t<void*, list_t>;
+		using expected_t = list_t;
 
-	auto const same = std::is_same_v<expected_t, sot_t>;
-	EXPECT_TRUE( same ) << typeid(sot_t).name();
+		auto const same = std::is_same_v<expected_t, sot_t>;
+		EXPECT_TRUE( same ) << typeid( sot_t ).name();
 	}
 
 	{
-	using sot_t = TypeListRemove_t<void, list_t>;
-	using expected_t = TypeList<int, nested_t, std::string>;
+		using sot_t      = TypeListRemove_t<void, list_t>;
+		using expected_t = TypeList<int, nested_t, std::string>;
 
-	auto const same = std::is_same_v<expected_t, sot_t>;
-	EXPECT_TRUE( same ) << typeid( sot_t ).name();
+		auto const same = std::is_same_v<expected_t, sot_t>;
+		EXPECT_TRUE( same ) << typeid( sot_t ).name();
 	}
 
 	{
-	using sot_t = TypeListRemove_t<int, list_t>;
-	using expected_t = TypeList<void, nested_t, std::string>;
+		using sot_t      = TypeListRemove_t<int, list_t>;
+		using expected_t = TypeList<void, nested_t, std::string>;
 
-	auto const same = std::is_same_v<expected_t, sot_t>;
-	EXPECT_TRUE( same ) << typeid( sot_t ).name();
+		auto const same = std::is_same_v<expected_t, sot_t>;
+		EXPECT_TRUE( same ) << typeid( sot_t ).name();
 	}
 
 	{
-	using sot_t = TypeListRemove_t<nested_t, list_t>;
-	using expected_t = TypeList<void, int, std::string>;
+		using sot_t      = TypeListRemove_t<nested_t, list_t>;
+		using expected_t = TypeList<void, int, std::string>;
 
-	auto const same = std::is_same_v<expected_t, sot_t>;
-	EXPECT_TRUE( same ) << typeid( sot_t ).name();
+		auto const same = std::is_same_v<expected_t, sot_t>;
+		EXPECT_TRUE( same ) << typeid( sot_t ).name();
 	}
 
 	{
-	using sot_t = TypeListRemove_t<std::string, list_t>;
-	using expected_t = TypeList<void, int, nested_t>;
+		using sot_t      = TypeListRemove_t<std::string, list_t>;
+		using expected_t = TypeList<void, int, nested_t>;
 
-	auto const same = std::is_same_v<expected_t, sot_t>;
-	EXPECT_TRUE( same ) << typeid( sot_t ).name();
+		auto const same = std::is_same_v<expected_t, sot_t>;
+		EXPECT_TRUE( same ) << typeid( sot_t ).name();
 	}
 
 	{
-	using sot_t = TypeListRemove_t<float, list_t>;
-	using expected_t = TypeList<void, int, nested_t, std::string>;
+		using sot_t      = TypeListRemove_t<float, list_t>;
+		using expected_t = TypeList<void, int, nested_t, std::string>;
 
-	auto const same = std::is_same_v<expected_t, sot_t>;
-	EXPECT_TRUE( same ) << typeid( sot_t ).name();
+		auto const same = std::is_same_v<expected_t, sot_t>;
+		EXPECT_TRUE( same ) << typeid( sot_t ).name();
 	}
 
 	{
-	using sot_t = TypeListRemove_t<double, list_t>;
-	using expected_t = TypeList<void, int, nested_t, std::string>;
+		using sot_t      = TypeListRemove_t<double, list_t>;
+		using expected_t = TypeList<void, int, nested_t, std::string>;
 
-	auto const same = std::is_same_v<expected_t, sot_t>;
-	EXPECT_TRUE( same ) << typeid( sot_t ).name();
+		auto const same = std::is_same_v<expected_t, sot_t>;
+		EXPECT_TRUE( same ) << typeid( sot_t ).name();
 	}
 
 	{
-	using sot_t = TypeListRemove_t<long, list_t>;
-	using expected_t = TypeList<void, int, nested_t, std::string>;
+		using sot_t      = TypeListRemove_t<long, list_t>;
+		using expected_t = TypeList<void, int, nested_t, std::string>;
 
-	auto const same = std::is_same_v<expected_t, sot_t>;
-	EXPECT_TRUE( same ) << typeid( sot_t ).name();
+		auto const same = std::is_same_v<expected_t, sot_t>;
+		EXPECT_TRUE( same ) << typeid( sot_t ).name();
 	}
 }
 
 TEST( CrtpTypeList, remove_list )
 {
-	using nested_t =  TypeList<float, double, long>;
-	using list_t = TypeList<void, int, nested_t, std::string>;
+	using nested_t = TypeList<float, double, long>;
+	using list_t   = TypeList<void, int, nested_t, std::string>;
 
 	{
-	using sot_t = TypeListRemoveList_t<TypeList<void*>, list_t>;
-	using expected_t = list_t;
+		using sot_t      = TypeListRemoveList_t<TypeList<void*>, list_t>;
+		using expected_t = list_t;
 
-	auto const same = std::is_same_v<expected_t, sot_t>;
-	EXPECT_TRUE( same ) << typeid(sot_t).name();
+		auto const same = std::is_same_v<expected_t, sot_t>;
+		EXPECT_TRUE( same ) << typeid( sot_t ).name();
 	}
 
 	{
-	using sot_t = TypeListRemoveList_t<TypeList<void>, list_t>;
-	using expected_t = TypeList<int, nested_t, std::string>;
+		using sot_t      = TypeListRemoveList_t<TypeList<void>, list_t>;
+		using expected_t = TypeList<int, nested_t, std::string>;
 
-	auto const same = std::is_same_v<expected_t, sot_t>;
-	EXPECT_TRUE( same ) << typeid( sot_t ).name();
+		auto const same = std::is_same_v<expected_t, sot_t>;
+		EXPECT_TRUE( same ) << typeid( sot_t ).name();
 	}
 
 	{
-	using sot_t = TypeListRemoveList_t<TypeList<void, int>, list_t>;
-	using expected_t = TypeList<nested_t, std::string>;
+		using sot_t      = TypeListRemoveList_t<TypeList<void, int>, list_t>;
+		using expected_t = TypeList<nested_t, std::string>;
 
-	auto const same = std::is_same_v<expected_t, sot_t>;
-	EXPECT_TRUE( same ) << typeid( sot_t ).name();
+		auto const same = std::is_same_v<expected_t, sot_t>;
+		EXPECT_TRUE( same ) << typeid( sot_t ).name();
 	}
 
 	{
-	using sot_t = TypeListRemoveList_t<TypeList<void, std::string>, list_t>;
-	using expected_t = TypeList<int, nested_t>;
+		using sot_t      = TypeListRemoveList_t<TypeList<void, std::string>, list_t>;
+		using expected_t = TypeList<int, nested_t>;
 
-	auto const same = std::is_same_v<expected_t, sot_t>;
-	EXPECT_TRUE( same ) << typeid( sot_t ).name();
+		auto const same = std::is_same_v<expected_t, sot_t>;
+		EXPECT_TRUE( same ) << typeid( sot_t ).name();
 	}
 
 	{
-	using sot_t = TypeListRemoveList_t<TypeList<int, std::string>, list_t>;
-	using expected_t = TypeList<void, nested_t>;
+		using sot_t      = TypeListRemoveList_t<TypeList<int, std::string>, list_t>;
+		using expected_t = TypeList<void, nested_t>;
 
-	auto const same = std::is_same_v<expected_t, sot_t>;
-	EXPECT_TRUE( same ) << typeid( sot_t ).name();
+		auto const same = std::is_same_v<expected_t, sot_t>;
+		EXPECT_TRUE( same ) << typeid( sot_t ).name();
 	}
 
 	{
-	using sot_t = TypeListRemoveList_t<TypeList<std::string>, list_t>;
-	using expected_t = TypeList<void, int, nested_t>;
+		using sot_t      = TypeListRemoveList_t<TypeList<std::string>, list_t>;
+		using expected_t = TypeList<void, int, nested_t>;
 
-	auto const same = std::is_same_v<expected_t, sot_t>;
-	EXPECT_TRUE( same ) << typeid( sot_t ).name();
+		auto const same = std::is_same_v<expected_t, sot_t>;
+		EXPECT_TRUE( same ) << typeid( sot_t ).name();
 	}
 
 	{
-	using sot_t = TypeListRemoveList_t<TypeList<nested_t>, list_t>;
-	using expected_t = TypeList<void, int, std::string>;
+		using sot_t      = TypeListRemoveList_t<TypeList<nested_t>, list_t>;
+		using expected_t = TypeList<void, int, std::string>;
 
-	auto const same = std::is_same_v<expected_t, sot_t>;
-	EXPECT_TRUE( same ) << typeid( sot_t ).name();
+		auto const same = std::is_same_v<expected_t, sot_t>;
+		EXPECT_TRUE( same ) << typeid( sot_t ).name();
 	}
 
 	{
-	using sot_t = TypeListRemoveList_t<TypeList<int>, list_t>;
-	using expected_t = TypeList<void, nested_t, std::string>;
+		using sot_t      = TypeListRemoveList_t<TypeList<int>, list_t>;
+		using expected_t = TypeList<void, nested_t, std::string>;
 
-	auto const same = std::is_same_v<expected_t, sot_t>;
-	EXPECT_TRUE( same ) << typeid( sot_t ).name();
+		auto const same = std::is_same_v<expected_t, sot_t>;
+		EXPECT_TRUE( same ) << typeid( sot_t ).name();
 	}
 }
 
@@ -481,5 +505,16 @@ TEST( CrtpTypeList, remove_all )
 	}
 }
 
+TEST( CrtpTypeList, make_set )
+{
+	using nested_t = TypeList<float, double, long>;
+	using list_t   = TypeList<int, void, int, nested_t, std::string, int, nested_t, int>;
+
+	using sot_t      = MakeTypeSet_t<list_t>;
+	using expected_t = TypeList<int, void, nested_t, std::string>;
+
+	auto const same = std::is_same_v<expected_t, sot_t>;
+	EXPECT_TRUE( same ) << typeid( sot_t ).name();
+}
 
 } // namespace crtp

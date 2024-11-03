@@ -181,60 +181,86 @@ struct FindTypeIf<TCondition, TypeList<T, Ts...>>
 
 /// TypeListConcat
 
-/// @brief Concat two types to a type list.
-template<typename TLhs, typename TRhs>
+/// @brief Concat two type lists into one.
+template<type_list TLhs, type_list TRhs>
 struct TypeListConcat
 {
-	using type = TypeList<TLhs, TRhs>;
+	using type = TLhs;
 };
 
-template<typename TLhs, typename TRhs>
+template<type_list TLhs, type_list TRhs>
 using TypeListConcat_t = typename TypeListConcat<TLhs, TRhs>::type;
 
+/// @brief Append type list @p TRhs... by type list @p TRhs...
+template<typename... TLhs, typename T, typename... TRhs>
+struct TypeListConcat<TypeList<TLhs...>, TypeList<T, TRhs...>>
+{
+	using type = TypeList<TLhs..., T, TRhs...>;
+};
+
+/// TypeListPushBack
+
+/// @brief Append type @p T to type list @p TList. (push_back)
+template<typename T, type_list TList>
+struct TypeListPushBack
+{
+	using type = TypeList<T>;
+};
+
+template<typename T, type_list TList>
+using TypeListPushBack_t = typename TypeListPushBack<T, TList>::type;
+
 /// @brief Concat prepend type list @p TRhs... by type @p TLhs.
-template<not_type_list TLhs, typename... TRhs>
-struct TypeListConcat<TLhs, TypeList<TRhs...>>
+template<typename T, typename T0, typename... Ts>
+struct TypeListPushBack<T, TypeList<T0, Ts...>>
 {
-	using type = TypeList<TLhs, TRhs...>;
+	using type = TypeList<T0, Ts..., T>;
 };
 
-/// @brief Concat append type list @p TLhs... by type @p TRhs.
-template<typename... TLhs, not_type_list TRhs>
-struct TypeListConcat<TypeList<TLhs...>, TRhs>
+/// TypeListPushFront
+
+/// @brief Prepend type @p T to type list @p TList.
+template<typename T, type_list TList>
+struct TypeListPushFront
 {
-	using type = TypeList<TLhs..., TRhs>;
+	using type = TypeList<T>;
 };
 
-/// @brief Concat append type list @p TRhs... by type list @p TRhs...
-template<typename... TLhs, typename... TRhs>
-struct TypeListConcat<TypeList<TLhs...>, TypeList<TRhs...>>
+template<typename T, type_list TList>
+using TypeListPushFront_t = typename TypeListPushFront<T, TList>::type;
+
+/// @brief Concat prepend type list @p TRhs... by type @p TLhs.
+template<typename T, typename T0, typename... Ts>
+struct TypeListPushFront<T, TypeList<T0, Ts...>>
 {
-	using type = TypeList<TLhs..., TRhs...>;
+	using type = TypeList<T, T0, Ts...>;
 };
 
 /// TypeListFlatten
 
 /// @brief Flatten multiple types into a type list without any nested type lists.
-template<typename T>
+template<type_list T>
 struct TypeListFlatten
 {
-	using type = TypeList<T>;
+	using type = T;
 };
 
-template<typename T>
+template<type_list T>
 using TypeListFlatten_t = typename TypeListFlatten<T>::type;
-
-template<>
-struct TypeListFlatten<TypeList<>>
-{
-	using type = TypeList<>;
-};
 
 template<typename T, typename... Ts>
 struct TypeListFlatten<TypeList<T, Ts...>>
 {
-	using lhs_t = std::conditional_t<IsTypeList_v<T>, TypeListFlatten_t<T>, T>;
+	using lhs_t = TypeList<T>;
 	using rhs_t = TypeListFlatten_t<TypeList<Ts...>>;
+	using type  = TypeListConcat_t<lhs_t, rhs_t>;
+};
+
+template<typename ...TLhs, typename... TRhs>
+struct TypeListFlatten<TypeList<TypeList<TLhs...>, TRhs...>>
+{
+	using lhs_t = TypeListFlatten_t<TypeList<TLhs...>>;
+	using rhs_t = TypeListFlatten_t<TypeList<TRhs...>>;
 	using type  = TypeListConcat_t<lhs_t, rhs_t>;
 };
 
@@ -316,6 +342,26 @@ template<typename TRemove, type_list TList>
 struct TypeListRemoveAll<TRemove, TList, std::enable_if_t<HasType_v<TRemove, TList>>>
 {
 	using type = TypeListRemoveAll_t<TRemove, TypeListRemove_t<TRemove, TList>>;
+};
+
+/// MakeTypeSet
+
+/// @brief Remove all duplicate types from type list @p TList.
+///        All duplicates after first occurance are removed.
+template<type_list TList>
+struct MakeTypeSet
+{
+	using type = TList;
+};
+
+template<type_list TList>
+using MakeTypeSet_t = typename MakeTypeSet<TList>::type;
+
+template<typename T, typename ...Ts>
+struct MakeTypeSet<TypeList<T, Ts...>>
+{
+	using removed_t = TypeListRemoveAll_t<T, TypeList<Ts...>>;
+	using type = TypeListPushFront_t<T, MakeTypeSet_t<removed_t>>;
 };
 
 } // namespace crtp
