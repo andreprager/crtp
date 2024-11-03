@@ -1,5 +1,4 @@
-#ifndef utility_custom_hpp
-#define utility_custom_hpp
+#pragma once
 
 #include <crtp/self.hpp>
 #include <crtp/storage/builder/builder.hpp>
@@ -305,8 +304,6 @@ struct Array
 
 template<std::size_t TSize = 128, std::size_t TAlignment = 16>
 bool operator==( Array<TSize, TAlignment> const& lhs, Array<TSize, TAlignment> const& rhs );
-template<std::size_t TSize = 128, std::size_t TAlignment = 16>
-bool operator!=( Array<TSize, TAlignment> const& lhs, Array<TSize, TAlignment> const& rhs );
 
 /// @brief: Track last call to call_user_api with some Array
 template<std::size_t TSize = 128, std::size_t TAlignment = 16>
@@ -382,7 +379,6 @@ struct Vector
 };
 
 bool operator==( Vector const& lhs, Vector const& rhs );
-bool operator!=( Vector const& lhs, Vector const& rhs );
 
 /// @brief: Track last call to call_user_api with some Vector
 extern Vector gs_vector;
@@ -407,5 +403,3 @@ template<typename T>
 char const* type_name();
 
 #include "custom.impl.hpp"
-
-#endif

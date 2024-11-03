@@ -12,7 +12,7 @@ namespace crtp::storage
 template<IBuilder TBuilder, std::size_t Size, std::size_t Alignment>
 inline OnStack<TBuilder, Size, Alignment>::OnStack( traits::NotPolicy auto value ) : m_data{}
 {
-	using T = std::decay_t<decltype(value)>;
+	using T = std::decay_t<decltype( value )>;
 	static_assert( IBuilderInplace<builder_t, Size, Alignment, T>,
 	               "OnStack requires IBuilderInplace<TBuilder, Size, Alignment, T>." );
 	m_builder.template inplace<Size, Alignment>( memory(), std::move( value ) );
@@ -61,6 +61,10 @@ inline OnStack<TBuilder, Size, Alignment>::~OnStack()
 template<IBuilder TBuilder, std::size_t Size, std::size_t Alignment>
 inline auto OnStack<TBuilder, Size, Alignment>::operator=( OnStack const& src ) -> OnStack&
 {
+	if ( this == &src )
+	{
+		return *this;
+	}
 	destroy();
 	src.memory()->clone( memory() );
 	return *this;
@@ -69,6 +73,10 @@ inline auto OnStack<TBuilder, Size, Alignment>::operator=( OnStack const& src ) 
 template<IBuilder TBuilder, std::size_t Size, std::size_t Alignment>
 inline auto OnStack<TBuilder, Size, Alignment>::operator=( OnStack&& src ) noexcept -> OnStack&
 {
+	if ( this == &src )
+	{
+		return *this;
+	}
 	destroy();
 	src.memory()->extract( memory() );
 	return *this;
@@ -179,7 +187,14 @@ template<IBuilder TBuilder, std::size_t Size, std::size_t Alignment>
 template<std::size_t Size2>
 inline bool OnStack<TBuilder, Size, Alignment>::swap( OnStackSrc<Size2>& src ) noexcept
 {
-	return swap_data( src.m_data );
+	if constexpr ( Size == Size2 )
+	{
+		return ( this != &src ) ? swap_data( src.m_data ) : true;
+	}
+	else
+	{
+		return swap_data( src.m_data );
+	}
 }
 
 template<IBuilder TBuilder, std::size_t Size, std::size_t Alignment>

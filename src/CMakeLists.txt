@@ -75,6 +75,7 @@ set(headers_install
 	"${include}/crtp/storage/value/value.hpp"
 	"${include}/crtp/storage/value/value.decl.hpp"
 	"${include}/crtp/storage/value/value.impl.hpp"
+	"${include}/crtp/type_list.hpp"
 )
 
 set(resources_natvis
@@ -99,10 +100,7 @@ target_compile_options(${PROJECT_NAME}
 		$<$<CXX_COMPILER_ID:MSVC>:/permissive->
 )
 
-set_target_properties(${PROJECT_NAME} PROPERTIES
-	C_STANDARD 11
-	CXX_STANDARD 20
-)
+target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_20)
 
 set(${PROJECT_NAME}_INCLUDE_SRC OFF
 	CACHE BOOL "Add directory ${src} to include BUILD_INTERFACE of ${PROJECT_NAME}.")

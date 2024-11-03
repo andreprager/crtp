@@ -36,6 +36,10 @@ inline OnHeap<TBuilder>::~OnHeap()
 template<IBuilder TBuilder>
 inline auto OnHeap<TBuilder>::operator=( OnHeap const& src ) -> OnHeap&
 {
+	if ( this == &src )
+	{
+		return *this;
+	}
 	src.m_data->clone( m_data );
 	return *this;
 }
@@ -43,6 +47,10 @@ inline auto OnHeap<TBuilder>::operator=( OnHeap const& src ) -> OnHeap&
 template<IBuilder TBuilder>
 inline auto OnHeap<TBuilder>::operator=( OnHeap&& src ) noexcept -> OnHeap&
 {
+	if ( this == &src )
+	{
+		return *this;
+	}
 	src.m_data->extract( m_data );
 	return *this;
 }
@@ -50,6 +58,10 @@ inline auto OnHeap<TBuilder>::operator=( OnHeap&& src ) noexcept -> OnHeap&
 template<IBuilder TBuilder>
 inline auto OnHeap<TBuilder>::swap( OnHeap& src ) noexcept -> OnHeap&
 {
+	if ( this == &src )
+	{
+		return *this;
+	}
 	m_data.swap( src.m_data );
 	return *this;
 }

@@ -224,4 +224,50 @@ TYPED_TEST( CrtpStorageSwapT, swap_Vector_Array )
 	EXPECT_EQ( a, gs_array<Size> );
 }
 
+
+template<typename T>
+struct CrtpStorageSwapSelfT : public testing::Test
+{
+	using policy_t = T;
+};
+
+// clang-format off
+using TestSwapSelf_types = ::testing::Types<
+	// OnStack
+	OnStack<UserApiBuilder, 64>,
+	OnStack<UserApiBuilder, 128>,
+	OnStack<UserApiBuilder, 256>,
+	OnStack<UserApiBuilder, 512>,
+	// Hybrid - Hybrid
+	Hybrid<UserApiBuilder, 32>,
+	Hybrid<UserApiBuilder, 64>,
+	Hybrid<UserApiBuilder, 128>,
+	Hybrid<UserApiBuilder, 256>,
+	Hybrid<UserApiBuilder, 512>,
+	// OnHeap - OnHeap
+	OnHeap<UserApiBuilder>
+>;
+// clang-format on
+
+TYPED_TEST_SUITE( CrtpStorageSwapSelfT, TestSwapSelf_types );
+
+TYPED_TEST( CrtpStorageSwapSelfT, swap_self )
+{
+	using policy_t = typename TestFixture::policy_t;
+
+	Vector const vector{ Vector::sequence( 256, 42 ) };
+
+	UserApi<policy_t> sot{ vector };
+
+	gs_vector = {};
+	call_user_api( sot );
+	EXPECT_EQ( vector, gs_vector );
+
+	swap( sot, sot );
+
+	gs_vector = {};
+	call_user_api( sot );
+	EXPECT_EQ( vector, gs_vector );
+}
+
 } // namespace crtp::storage

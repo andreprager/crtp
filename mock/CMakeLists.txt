@@ -49,10 +49,12 @@ set(src "${CMAKE_CURRENT_SOURCE_DIR}")
 set(include "${CMAKE_CURRENT_SOURCE_DIR}")
 
 set(sources
-	"${src}/dummy.cpp"
+	"${src}/custom.cpp"
 )
 
 set(headers_install
+	"${src}/custom.hpp"
+	"${src}/custom.impl.hpp"
 )
 
 set(headers
@@ -68,20 +70,7 @@ group_sources("${sources};${headers}")
 
 SetupDebugInformation(${PROJECT_NAME})
 
-set_target_properties(${PROJECT_NAME} PROPERTIES
-	C_STANDARD 11
-	CXX_STANDARD 20
-)
-
-set_target_properties(gtest PROPERTIES
-	C_STANDARD 11
-	CXX_STANDARD 20
-)
-
-set_target_properties(gtest_main PROPERTIES
-	C_STANDARD 11
-	CXX_STANDARD 20
-)
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
 
 target_include_directories(${PROJECT_NAME}
 	PUBLIC

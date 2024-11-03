@@ -43,6 +43,11 @@ GuardedImportConfigurable(${PROJECT_NAME} crtp
 	"${CMAKE_CURRENT_SOURCE_DIR}/../src"
 )
 
+set(crtp_mock_3rdparty_DIR "${${PROJECT_NAME}_3rdparty_ABSDIR}" CACHE PATH "")
+GuardedImport(crtp_mock
+	"../mock"
+)
+
 # project itself
 
 DefineProjectInstallVariables()
@@ -53,15 +58,6 @@ set(src_unit_test "${CMAKE_CURRENT_SOURCE_DIR}/../unit_test")
 set(sources
 	${src}/main.cpp
 	${src}/crtp/storage/storage.bm.cpp
-)
-
-set(sources_unit_test
-	${src_unit_test}/custom.cpp
-)
-
-set(headers_unit_test
-	${src_unit_test}/custom.hpp
-	${src_unit_test}/custom.impl.hpp
 )
 
 set(headers_install
@@ -96,20 +92,7 @@ group_sources("${headers_unit_test}" ${src_unit_test})
 
 SetupDebugInformation(${PROJECT_NAME})
 
-set_target_properties(${PROJECT_NAME} PROPERTIES
-	C_STANDARD 11
-	CXX_STANDARD 20
-)
-
-set_target_properties(benchmark PROPERTIES
-	C_STANDARD 11
-	CXX_STANDARD 20
-)
-
-set_target_properties(benchmark_main PROPERTIES
-	C_STANDARD 11
-	CXX_STANDARD 20
-)
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
 
 if(compiler MATCHES "^(MSVC)")
 	if(arch STREQUAL x86)
@@ -156,6 +139,7 @@ target_link_libraries(${PROJECT_NAME}
 #	PUBLIC
 	PRIVATE
 		crtp
+		crtp_mock
 		benchmark
 		benchmark_main
 )
@@ -164,6 +148,7 @@ DefaultProjectInstallAndExport()
 
 foreach(target
 	crtp
+	crtp_mock
 	benchmark
 	benchmark_main
 )

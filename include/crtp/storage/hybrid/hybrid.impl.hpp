@@ -12,7 +12,7 @@ namespace crtp::storage
 template<IBuilder TBuilder, std::size_t Size, std::size_t Alignment>
 inline Hybrid<TBuilder, Size, Alignment>::Hybrid( traits::NotPolicy auto value )
 {
-	using T = std::decay_t<decltype(value)>;
+	using T = std::decay_t<decltype( value )>;
 	if constexpr ( m_builder.template size<T>() <= Size )
 	{
 		static_assert( IBuilderInplace<builder_t, Size, Alignment, T>, "Hybrid requires IBuilderInplace<TBuilder, T>." );
@@ -62,13 +62,13 @@ inline auto Hybrid<TBuilder, Size, Alignment>::operator=( Hybrid const& src ) ->
 {
 	static_assert( IBuilderStack<builder_t, Size>, "Hybrid requires IBuilderStack<TBuilder, Size>." );
 
-	return destroy().construct( src );
+	return ( this != &src ) ? destroy().construct( src ) : *this;
 }
 
 template<IBuilder TBuilder, std::size_t Size, std::size_t Alignment>
 inline auto Hybrid<TBuilder, Size, Alignment>::operator=( Hybrid&& src ) noexcept -> Hybrid&
 {
-	return destroy().construct( std::move( src ) );
+	return ( this != &src ) ? destroy().construct( std::move( src ) ) : *this;
 }
 
 template<IBuilder TBuilder, std::size_t Size, std::size_t Alignment>
@@ -296,6 +296,10 @@ inline auto Hybrid<TBuilder, Size, Alignment>::swap_pointer( HybridSrc<Size2>& s
 template<IBuilder TBuilder, std::size_t Size, std::size_t Alignment>
 inline auto Hybrid<TBuilder, Size, Alignment>::swap( Hybrid& src ) noexcept -> Hybrid&
 {
+	if ( this == &src )
+	{
+		return *this;
+	}
 	if ( 0 == m_data.index() )
 	{
 		if ( 0 == src.m_data.index() )

@@ -45,7 +45,7 @@ namespace crtp::storage
 TEST( CrtpStorageUserApi, storage_size )
 {
 	using uac_t = UserApiConcept;
-	EXPECT_EQ( sizeof(void*), sizeof(uac_t));
+	EXPECT_EQ( sizeof( void* ), sizeof( uac_t ) );
 	using uab_t = UserApiBuilder;
 	EXPECT_EQ( 1, sizeof( uab_t ) );
 	using oh_t = OnHeap<UserApiBuilder>;
@@ -65,7 +65,7 @@ TEST( CrtpStorageUserApi, storage_size )
 TEST( CrtpStorageUserApi, storage_size_derived )
 {
 	using uac_t = UserApiConceptDerived;
-	EXPECT_EQ( 2*sizeof(void*), sizeof( uac_t ) );
+	EXPECT_EQ( 2 * sizeof( void* ), sizeof( uac_t ) );
 	using uab_t = UserApiBuilderDerived;
 	EXPECT_EQ( 1, sizeof( uab_t ) );
 	using oh_t = OnHeap<UserApiBuilderDerived>;
@@ -186,6 +186,21 @@ TYPED_TEST( CrtpStorageUserApiT, copy_assign )
 	EXPECT_EQ( expected_vector, gs_vector );
 }
 
+TYPED_TEST( CrtpStorageUserApiT, copy_assign_self )
+{
+	using policy_t = typename TestFixture::policy_t;
+
+	Vector const expected_vector{ 1024, std::uint8_t{ 42 } };
+
+	UserApi<policy_t> sot{ expected_vector };
+
+	sot = sot;
+
+	gs_vector = {};
+	sot.user_api();
+	EXPECT_EQ( expected_vector, gs_vector );
+}
+
 TYPED_TEST( CrtpStorageUserApiT, move_ctor )
 {
 	using policy_t = typename TestFixture::policy_t;
@@ -217,6 +232,21 @@ TYPED_TEST( CrtpStorageUserApiT, move_assign )
 	gs_vector = {};
 	moved.user_api();
 	EXPECT_EQ( empty_vector, gs_vector );
+	gs_vector = {};
+	sot.user_api();
+	EXPECT_EQ( expected_vector, gs_vector );
+}
+
+TYPED_TEST( CrtpStorageUserApiT, move_assign_self )
+{
+	using policy_t = typename TestFixture::policy_t;
+
+	Vector const expected_vector{ 1024, std::uint8_t{ 42 } };
+
+	UserApi<policy_t> sot{ expected_vector };
+
+	sot = std::move( sot );
+
 	gs_vector = {};
 	sot.user_api();
 	EXPECT_EQ( expected_vector, gs_vector );
@@ -488,38 +518,38 @@ TEST( CrtpStorageUserApiDerived, assign )
 	sot = moved_rsh;
 }
 
-TEST(CrtpStorageUserApiDerived, ctor)
+TEST( CrtpStorageUserApiDerived, ctor )
 {
 	Vector const empty_vector{};
 	Vector const expected_vector{ 1024, std::uint8_t{ 42 } };
 
-	std::array<std::byte, 256> buffer{};
-	std::array<std::byte, 256> buffer_derived{};
-	UserApiConcept * const memory{reinterpret_cast<UserApiConcept *>(buffer.data())};
-	UserApiConceptDerived * const memory_derived{reinterpret_cast<UserApiConceptDerived *>(buffer_derived.data())};
-	auto model = reinterpret_cast<UserApiModelDerived<Vector>*>(memory);
-	auto model_derived = reinterpret_cast<UserApiModelDerived<Vector>*>(memory_derived);
-	std::construct_at(model, expected_vector);
-	std::construct_at(model_derived, expected_vector);
+	std::array<std::byte, 256>   buffer{};
+	std::array<std::byte, 256>   buffer_derived{};
+	UserApiConcept* const        memory{ reinterpret_cast<UserApiConcept*>( buffer.data() ) };
+	UserApiConceptDerived* const memory_derived{ reinterpret_cast<UserApiConceptDerived*>( buffer_derived.data() ) };
+	auto                         model         = reinterpret_cast<UserApiModelDerived<Vector>*>( memory );
+	auto                         model_derived = reinterpret_cast<UserApiModelDerived<Vector>*>( memory_derived );
+	std::construct_at( model, expected_vector );
+	std::construct_at( model_derived, expected_vector );
 
 	gs_vector = {};
 	model->user_api();
-	EXPECT_EQ(expected_vector, gs_vector);
+	EXPECT_EQ( expected_vector, gs_vector );
 
 	gs_vector = {};
 	model_derived->user_api();
-	EXPECT_EQ(expected_vector, gs_vector);
-	
+	EXPECT_EQ( expected_vector, gs_vector );
+
 	gs_vector_derived = {};
 	model->user_api_derived();
-	EXPECT_EQ(expected_vector, gs_vector_derived);
+	EXPECT_EQ( expected_vector, gs_vector_derived );
 
 	gs_vector_derived = {};
 	model_derived->user_api_derived();
-	EXPECT_EQ(expected_vector, gs_vector_derived);
-	
-	std::destroy_at(model_derived);
-	std::destroy_at(model);
+	EXPECT_EQ( expected_vector, gs_vector_derived );
+
+	std::destroy_at( model_derived );
+	std::destroy_at( model );
 }
 
 TEST( CrtpStorageUserApiDerived, copy_assign )
@@ -532,7 +562,7 @@ TEST( CrtpStorageUserApiDerived, copy_assign )
 	Vector const expected_vector{ 1024, std::uint8_t{ 42 } };
 
 	UserApiDerived<policy_rsh_t> cloned{ expected_vector };
-	UserApi<policy_lsh_t> sot{ other_vector };
+	UserApi<policy_lsh_t>        sot{ other_vector };
 	sot = cloned;
 
 	gs_vector = {};

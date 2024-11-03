@@ -59,15 +59,13 @@ set(sources
 	"${src}/crtp/storage/storage.test.cpp"
 	"${src}/crtp/storage/swap.test.cpp"
 	"${src}/crtp/storage/value.test.cpp"
-	"${src}/custom.cpp"
+	"${src}/crtp/type_list.test.cpp"
 )
 
 set(headers_install
 )
 
 set(headers_private
-	"${src}/custom.hpp"
-	"${src}/custom.impl.hpp"
 )
 
 add_executable(${PROJECT_NAME}
@@ -82,20 +80,7 @@ group_sources("${headers_install}" ${include})
 
 SetupDebugInformation(${PROJECT_NAME})
 
-set_target_properties(${PROJECT_NAME} PROPERTIES
-	C_STANDARD 11
-	CXX_STANDARD 20
-)
-
-set_target_properties(gtest PROPERTIES
-	C_STANDARD 11
-	CXX_STANDARD 20
-)
-
-set_target_properties(gtest_main PROPERTIES
-	C_STANDARD 11
-	CXX_STANDARD 20
-)
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
 
 if(BUILD_SHARED_LIBS)
 	target_compile_definitions(${PROJECT_NAME}
