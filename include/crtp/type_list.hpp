@@ -80,6 +80,12 @@ static constexpr std::size_t const TypeListSize_v = TypeListSize<T>::value;
 template<type_list T>
 static constexpr std::size_t const TypeList_size = TypeListSize<T>::value;
 
+template<typename T>
+concept type_list_empty = type_list<T> && (0 == TypeList_size<T>);
+
+template<typename T>
+concept type_list_non_empty = type_list<T> && (0 < TypeList_size<T>);
+
 template<typename... Ts>
 struct TypeListSize<TypeList<Ts...>> : public std::integral_constant<std::size_t, sizeof...( Ts )>
 {};
@@ -126,6 +132,9 @@ struct HasType : public IsTypeIndexValid<FindType_v<TSearch, T>, T>
 template<typename TSearch, type_list T>
 static constexpr bool const HasType_v = HasType<TSearch, T>::value;
 
+template<typename T, typename TList>
+concept from_list = type_list<TList> && HasType_v<T, TList>;
+
 /// TypeAt
 
 /// @brief Check if type list @p T contains type @p TSearch at position @p Index.
@@ -151,6 +160,11 @@ struct TypeAt<0, TypeList<T, Ts...>> : public std::true_type
 template<std::size_t Index, typename T, typename... Ts>
 struct TypeAt<Index, TypeList<T, Ts...>> : public TypeAt<Index - 1, TypeList<Ts...>>
 {};
+
+template<type_list_non_empty T>
+using First_t = TypeAt_t<0, T>;
+template<type_list_non_empty T>
+using Last_t = TypeAt_t<TypeList_size<T> - 1, T>;
 
 /// FindTypeIf
 
