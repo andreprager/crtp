@@ -517,4 +517,17 @@ TEST( CrtpTypeList, make_set )
 	EXPECT_TRUE( same ) << typeid( sot_t ).name();
 }
 
+TEST( CrtpTypeList, is_set )
+{
+	using nested_t = TypeList<float, double, long>;
+	using list_t   = TypeList<int, void, int, nested_t, std::string, int, nested_t, int>;
+
+	constexpr auto const no_set = IsTypeSet_v<list_t>;
+	EXPECT_FALSE( no_set ) << typeid( list_t ).name();
+
+	using sot_t      = MakeTypeSet_t<list_t>;
+	constexpr auto const is_set = IsTypeSet_v<sot_t>;
+	EXPECT_TRUE( is_set ) << typeid( sot_t ).name();
+}
+
 } // namespace crtp

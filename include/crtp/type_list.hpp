@@ -42,7 +42,7 @@ struct MakeTuple
 template<typename T>
 using MakeTuple_t = typename MakeTuple<T>::type;
 
-/// @brief Build tuple out of TypeList<@p Ts...>.
+/// @brief Build tuple<@p Ts...> out of TypeList<@p Ts...>.
 template<typename... Ts>
 struct MakeTuple<TypeList<Ts...>>
 {
@@ -81,10 +81,10 @@ template<type_list T>
 static constexpr std::size_t const TypeList_size = TypeListSize<T>::value;
 
 template<typename T>
-concept type_list_empty = type_list<T> && (0 == TypeList_size<T>);
+concept type_list_empty = type_list<T> && ( 0 == TypeList_size<T> );
 
 template<typename T>
-concept type_list_non_empty = type_list<T> && (0 < TypeList_size<T>);
+concept type_list_non_empty = type_list<T> && ( 0 < TypeList_size<T> );
 
 template<typename... Ts>
 struct TypeListSize<TypeList<Ts...>> : public std::integral_constant<std::size_t, sizeof...( Ts )>
@@ -147,15 +147,15 @@ struct TypeAt : public std::false_type
 template<std::size_t Index, type_list T>
 using TypeAt_t = typename TypeAt<Index, T>::type;
 
-template<typename... Ts>
-struct TypeAt<0, TypeList<Ts...>> : public std::false_type
-{};
-
 template<typename T, typename... Ts>
 struct TypeAt<0, TypeList<T, Ts...>> : public std::true_type
 {
 	using type = T;
 };
+
+template<std::size_t Index, typename... Ts>
+struct TypeAt<Index, TypeList<Ts...>> : public std::false_type
+{};
 
 template<std::size_t Index, typename T, typename... Ts>
 struct TypeAt<Index, TypeList<T, Ts...>> : public TypeAt<Index - 1, TypeList<Ts...>>
@@ -270,7 +270,7 @@ struct TypeListFlatten<TypeList<T, Ts...>>
 	using type  = TypeListConcat_t<lhs_t, rhs_t>;
 };
 
-template<typename ...TLhs, typename... TRhs>
+template<typename... TLhs, typename... TRhs>
 struct TypeListFlatten<TypeList<TypeList<TLhs...>, TRhs...>>
 {
 	using lhs_t = TypeListFlatten_t<TypeList<TLhs...>>;
@@ -342,7 +342,7 @@ struct TypeListRemoveList<TypeList<T, TLhs...>, TList>
 
 /// TypeListRemoveAll
 
-/// @brief Remove first type @p TRemove from type list @p TList.
+/// @brief Remove all type occurances of @p TRemove from type list @p TList.
 template<typename TRemove, type_list TList, typename EnableIf = void>
 struct TypeListRemoveAll
 {
@@ -371,11 +371,35 @@ struct MakeTypeSet
 template<type_list TList>
 using MakeTypeSet_t = typename MakeTypeSet<TList>::type;
 
-template<typename T, typename ...Ts>
+template<typename T, typename... Ts>
 struct MakeTypeSet<TypeList<T, Ts...>>
 {
 	using removed_t = TypeListRemoveAll_t<T, TypeList<Ts...>>;
-	using type = TypeListPushFront_t<T, MakeTypeSet_t<removed_t>>;
+	using type      = TypeListPushFront_t<T, MakeTypeSet_t<removed_t>>;
 };
+
+template<type_list TList>
+struct IsTypeSet : std::false_type
+{};
+
+template<type_list TList>
+static constexpr bool const IsTypeSet_v = IsTypeSet<TList>::value;
+
+/// Empty list is a set.
+template<typename... Ts>
+struct IsTypeSet<TypeList<Ts...>> : std::true_type
+{};
+
+/// Recursive check if first type is contained in type list of remaining types.
+template<typename T, typename... Ts>
+struct IsTypeSet<TypeList<T, Ts...>>
+  : std::conditional_t<HasType_v<T, TypeList<Ts...>>, std::false_type, IsTypeSet<TypeList<Ts...>>>
+{};
+
+template<typename T>
+concept type_set = type_list<T> && IsTypeSet_v<T>;
+
+template<typename T>
+concept not_type_set = !type_list<T> || !IsTypeSet_v<T>;
 
 } // namespace crtp
